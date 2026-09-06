@@ -96,7 +96,7 @@ export default function App() {
     }
   }, [cafeInfo]);
 
-  // Detect query parameters (?table=X or ?view=admin)
+  // Detect query parameters (?table=X or ?view=admin or /admin)
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
@@ -105,8 +105,11 @@ export default function App() {
         setTableNumber(tableParam);
       }
       const viewParam = params.get('view');
-      if (viewParam === 'admin') {
-        setViewMode('admin');
+      const adminParam = params.get('admin');
+      const isAdminPath = window.location.pathname.toLowerCase().includes('admin');
+
+      if (viewParam === 'admin' || adminParam === 'true' || isAdminPath) {
+        setIsAdminAuthOpen(true);
       }
     }
   }, []);
