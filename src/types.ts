@@ -1,16 +1,27 @@
-export type ActiveModal = 
-  | null 
-  | 'menu' 
-  | 'drinks' 
-  | 'desserts' 
-  | 'buffet' 
-  | 'whats-on' 
-  | 'catering' 
-  | 'visit' 
-  | 'cake-order' 
-  | 'feedback' 
-  | 'book-table' 
-  | 'directions';
+export type CategoryType = 
+  | 'all'
+  | 'coffee' 
+  | 'tea' 
+  | 'bakery' 
+  | 'brunch' 
+  | 'sandwiches' 
+  | 'desserts';
+
+export type DietaryTag = 'vegan' | 'vegetarian' | 'gluten-free' | 'dairy-free' | 'popular' | 'chef-choice';
+
+export interface CafeMenuItem {
+  id: string;
+  name: string;
+  category: Exclude<CategoryType, 'all'>;
+  price: number;
+  description: string;
+  isAvailable: boolean;
+  dietary?: DietaryTag[];
+  preparationTime?: string;
+  temperature?: 'hot' | 'iced' | 'both';
+  calories?: string;
+  image?: string;
+}
 
 export interface TimeSlot {
   id: string;
@@ -21,22 +32,32 @@ export interface TimeSlot {
   highlights: string[];
 }
 
-export interface MenuItem {
-  id: string;
+export interface CafeInfo {
   name: string;
-  amharicName?: string;
-  category: 'breakfast' | 'buffet' | 'coffee' | 'shawarma' | 'desserts' | 'mains' | 'drinks';
-  price: string;
-  description: string;
-  tag?: string;
-  dietary?: 'vegetarian' | 'fasting' | 'popular' | 'chef-special';
+  tagline: string;
+  address: string;
+  hours: string;
+  phone: string;
+  wifiName: string;
+  wifiPassword: string;
+  announcement: string;
+  currencySymbol: string;
+  tableCount: number;
 }
 
-export interface ContactInfo {
-  phone1: string;
-  phone2: string;
-  email: string;
-  location: string;
-  landmark: string;
-  hours: string;
+export interface OrderItem {
+  item: CafeMenuItem;
+  quantity: number;
+  notes?: string;
 }
+
+export type ActiveModal = 
+  | null 
+  | 'qr-code' 
+  | 'order-tray' 
+  | 'item-detail' 
+  | 'add-item' 
+  | 'edit-item' 
+  | 'cafe-settings'
+  | 'feedback'
+  | 'time-slot';

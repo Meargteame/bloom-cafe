@@ -1,78 +1,117 @@
 import React from 'react';
-import { ActiveModal } from '../types';
+import { CafeInfo } from '../types';
+import { ArrowDown, QrCode, ShoppingBag, Sparkles, Clock, Wifi, Check, Copy } from 'lucide-react';
 
 interface HeroProps {
-  onOpenModal: (modal: ActiveModal) => void;
+  cafeInfo: CafeInfo;
+  onOpenQRModal: () => void;
+  onOpenOrderTray: () => void;
+  orderItemCount: number;
   onScrollToSection: (id: string) => void;
 }
 
-export const Hero: React.FC<HeroProps> = ({ onOpenModal, onScrollToSection }) => {
+export const Hero: React.FC<HeroProps> = ({
+  cafeInfo,
+  onOpenQRModal,
+  onOpenOrderTray,
+  orderItemCount,
+  onScrollToSection,
+}) => {
+  const [copiedWifi, setCopiedWifi] = React.useState<boolean>(false);
+
+  const handleCopyWifi = () => {
+    navigator.clipboard.writeText(cafeInfo.wifiPassword);
+    setCopiedWifi(true);
+    setTimeout(() => setCopiedWifi(false), 2000);
+  };
+
   return (
-    <section className="relative w-full bg-[#0B281B] overflow-hidden pt-12 pb-24 md:pt-20 md:pb-36">
-      {/* Abstract concentric rounded/pill shapes in background right side (matches screenshot) */}
-      <div 
-        className="absolute right-[-10%] top-[-10%] w-[550px] h-[550px] md:w-[780px] md:h-[780px] rounded-full pointer-events-none select-none"
-        style={{
-          background: 'radial-gradient(circle at 65% 45%, rgba(26, 68, 48, 0.45) 0%, rgba(19, 56, 38, 0.3) 45%, rgba(11, 40, 27, 0) 70%)',
-        }}
-      />
-      {/* Decorative overlapping organic curved graphic matching screenshot */}
-      <svg
-        className="absolute right-[-5%] top-1/2 -translate-y-1/2 w-[340px] md:w-[620px] h-[620px] pointer-events-none opacity-30"
-        viewBox="0 0 500 500"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <circle cx="340" cy="250" r="220" stroke="#1D533A" strokeWidth="60" />
-        <circle cx="280" cy="250" r="140" fill="#15422E" opacity="0.6" />
-        <path
-          d="M 280 150 C 350 150, 420 200, 420 280 C 420 360, 340 430, 260 430"
-          stroke="#215D41"
-          strokeWidth="48"
-          strokeLinecap="round"
-        />
-      </svg>
+    <section id="hero" className="relative pt-12 pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto overflow-hidden">
+      {/* Location Eyebrow */}
+      <div className="flex items-center gap-2 mb-4 text-[#F4B838] tracking-[0.24em] uppercase text-xs font-bold">
+        <span className="w-2 h-2 rounded-full bg-[#F4B838]" />
+        <span>42 GARDEN LANE · SPECIALTY COFFEE · ARTISAN KITCHEN</span>
+      </div>
 
-      <div className="relative max-w-7xl mx-auto px-6 sm:px-8 z-10">
-        <div className="max-w-2xl lg:max-w-3xl">
-          {/* Eyebrow Location */}
-          <div className="mb-6 md:mb-8">
-            <span
-              className="text-[#F4B838] font-bold text-xs sm:text-sm tracking-[0.24em] uppercase"
-              style={{ wordSpacing: '0.2em' }}
+      {/* Main Headline Pairing Roman with Italic Golden Word */}
+      <div className="max-w-4xl space-y-6">
+        <h1 className="text-5xl sm:text-6xl lg:text-7xl font-editorial font-bold text-[#FAF8F5] tracking-tight leading-[1.05]">
+          Taste the <span className="italic font-normal text-[#F4B838]">moment</span>.
+        </h1>
+
+        <p className="text-base sm:text-lg text-[#CAD4CD] leading-relaxed max-w-2xl font-light">
+          A specialty coffee roastery, artisanal bakery, and all-day kitchen. Scan our table QR code or explore our contactless digital menu to assemble your order.
+        </p>
+
+        {/* CTA Buttons */}
+        <div className="flex flex-wrap items-center gap-4 pt-2">
+          {/* Primary Gold CTA */}
+          <button
+            type="button"
+            onClick={() => onScrollToSection('digital-menu')}
+            className="px-7 py-3.5 bg-[#F4B838] hover:bg-[#E4A82B] text-black font-bold text-xs uppercase tracking-[0.2em] rounded-xl shadow-lg transition-all flex items-center gap-2 group"
+          >
+            <span>Explore Menu</span>
+            <ArrowDown className="w-4 h-4 transition-transform group-hover:translate-y-0.5" />
+          </button>
+
+          {/* Secondary Outline Pill */}
+          <button
+            type="button"
+            onClick={onOpenQRModal}
+            className="px-6 py-3.5 bg-[#071E13] hover:bg-[#123827] text-white border border-[#16422E] hover:border-[#F4B838] font-bold text-xs uppercase tracking-[0.2em] rounded-xl transition-all flex items-center gap-2"
+          >
+            <QrCode className="w-4 h-4 text-[#F4B838]" />
+            <span>Table QR Stand</span>
+          </button>
+
+          {/* Order Tray Pill if active */}
+          {orderItemCount > 0 && (
+            <button
+              type="button"
+              onClick={onOpenOrderTray}
+              className="px-6 py-3.5 bg-[#FAF8F5] hover:bg-white text-[#0B281B] font-bold text-xs uppercase tracking-[0.2em] rounded-xl transition-all flex items-center gap-2 shadow-lg"
             >
-              SEMAY TOWER · BOLE WOLLO SEFER · ADDIS ABABA
-            </span>
+              <ShoppingBag className="w-4 h-4 text-[#F4B838]" />
+              <span>Table Order ({orderItemCount})</span>
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Guest WiFi & Hours Bento Strip */}
+      <div className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-4 border-t border-[#16422E] pt-8">
+        <div className="bg-[#071E13] p-4 rounded-2xl border border-[#16422E] flex items-center gap-3">
+          <Clock className="w-5 h-5 text-[#F4B838] shrink-0" />
+          <div>
+            <span className="text-[10px] uppercase font-bold tracking-[0.2em] text-[#8FA597] block">Hours</span>
+            <span className="text-sm font-semibold text-[#FAF8F5]">{cafeInfo.hours}</span>
           </div>
+        </div>
 
-          {/* Signature Headline */}
-          <h1 className="font-editorial text-6xl sm:text-7xl md:text-8xl lg:text-[104px] font-normal leading-[0.95] text-[#FAF8F5] tracking-tight mb-8">
-            Taste <br />
-            the <span className="italic font-normal text-[#F4B838]">moment</span>.
-          </h1>
+        <div className="bg-[#071E13] p-4 rounded-2xl border border-[#16422E] flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Wifi className="w-5 h-5 text-[#F4B838] shrink-0" />
+            <div>
+              <span className="text-[10px] uppercase font-bold tracking-[0.2em] text-[#8FA597] block">Guest WiFi</span>
+              <span className="text-xs font-mono text-[#FAF8F5]">{cafeInfo.wifiName}</span>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={handleCopyWifi}
+            className="px-2.5 py-1 rounded-lg bg-[#16422E] hover:bg-[#F4B838] text-[#F4B838] hover:text-black text-[10px] font-bold uppercase tracking-wider transition-colors flex items-center gap-1"
+          >
+            {copiedWifi ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+            <span>{copiedWifi ? 'Copied' : 'Key'}</span>
+          </button>
+        </div>
 
-          {/* Subtitle / Description */}
-          <p className="text-[#CFD7D0] text-lg sm:text-xl md:text-[22px] font-normal leading-relaxed max-w-2xl mb-10 text-pretty">
-            A kitchen and coffee bar that never closes. Breakfast at five, buffet at noon,
-            coffee all afternoon, the shawarma station from five, and a hot plate at three
-            in the morning.
-          </p>
-
-          {/* Action Button Row */}
-          <div className="flex flex-wrap items-center gap-4 sm:gap-5">
-            <button
-              onClick={() => onOpenModal('menu')}
-              className="px-8 py-4 bg-[#F4B838] hover:bg-[#e4a82b] text-[#0B281B] font-bold text-sm tracking-wider uppercase rounded-full shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
-            >
-              SEE THE MENU
-            </button>
-
-            <button
-              onClick={() => onScrollToSection('find-us')}
-              className="px-8 py-4 bg-[#0B281B] hover:bg-[#133D2B] text-white border border-[#27533E] hover:border-[#387457] font-semibold text-sm tracking-wider uppercase rounded-full transition-all duration-200 cursor-pointer"
-            >
-              FIND US
-            </button>
+        <div className="bg-[#071E13] p-4 rounded-2xl border border-[#16422E] flex items-center gap-3">
+          <Sparkles className="w-5 h-5 text-[#F4B838] shrink-0" />
+          <div>
+            <span className="text-[10px] uppercase font-bold tracking-[0.2em] text-[#8FA597] block">Table Service</span>
+            <span className="text-sm font-semibold text-[#FAF8F5]">Contactless Digital Menu</span>
           </div>
         </div>
       </div>

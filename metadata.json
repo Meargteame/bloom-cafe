@@ -1,6 +1,7 @@
 {
-  "name": "IDDO Restaurant",
-  "description": "IDDO Restaurant — A kitchen and coffee bar in Semay Tower, Bole Wollo Sefer, Addis Ababa. Open 24 hours.",
+  "name": "Bloom Cafe",
+  "description": "Bloom Cafe — Digital menu, specialty coffee bar, artisan bakery, QR code table ordering, and admin management.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
+

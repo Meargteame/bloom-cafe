@@ -1,4 +1,4 @@
-# Permanent UI Design System — IDDO Restaurant
+# Permanent UI Design System
 
 Refer to `AGENTS.md` for the complete design system specifications.
 
@@ -14,11 +14,11 @@ Refer to `AGENTS.md` for the complete design system specifications.
    - Clean sans-serif for body text
    - Monospace for prices and hours
 3. **Maintain established layout hierarchy**:
-   - Header with IDDO emblem and navigation
+   - Header with emblem and gold wordmark
    - Hero with location eyebrow and CTAs
    - Live 24-hour status ticker
-   - 5-part hour table grid on ivory canvas
-   - Tobacco brown promotional carousel (Cakes & Feedback)
-   - Find Us section with 4 highlight cards
-   - Bento contact cards and 4-column footer
-   - Floating feedback action button
+   - Ivory canvas (`#FBF8F2`) section for digital menu and table offerings
+   - Tobacco brown promotional carousel
+   - Find Us section with feature cards
+   - Bento contact cards and footer
+   - Floating action button / table tray

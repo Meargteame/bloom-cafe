@@ -1,101 +1,119 @@
-import React from 'react';
-import { MapPin, Phone, Clock, Utensils, Music, Flame } from 'lucide-react';
-import { ActiveModal } from '../types';
+import React, { useState } from 'react';
+import { CafeInfo } from '../types';
+import { MapPin, Clock, Wifi, QrCode, Phone, Check, Copy } from 'lucide-react';
 
 interface FindUsSectionProps {
-  onOpenModal: (modal: ActiveModal) => void;
+  cafeInfo: CafeInfo;
+  onOpenQRModal: () => void;
 }
 
-export const FindUsSection: React.FC<FindUsSectionProps> = ({ onOpenModal }) => {
-  const highlights = [
-    {
-      label: 'HOURS',
-      value: '24 / 7',
-      detail: 'Every day, all day and all night',
-      icon: Clock,
-    },
-    {
-      label: 'BUFFET',
-      value: 'Mon — Fri',
-      detail: 'Fasting and non-fasting, lunch',
-      icon: Utensils,
-    },
-    {
-      label: 'SHAWARMA',
-      value: 'From 5pm',
-      detail: 'Carved to order, nightly',
-      icon: Flame,
-    },
-    {
-      label: 'JAZZ',
-      value: 'Thursdays',
-      detail: 'Live from 5pm, no cover',
-      icon: Music,
-    },
-  ];
+export const FindUsSection: React.FC<FindUsSectionProps> = ({
+  cafeInfo,
+  onOpenQRModal,
+}) => {
+  const [copied, setCopied] = useState<boolean>(false);
+
+  const handleCopyWifi = () => {
+    navigator.clipboard.writeText(cafeInfo.wifiPassword);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
-    <section id="find-us" className="w-full bg-[#0B281B] text-white py-24 md:py-32 px-6 sm:px-8 border-b border-[#143D2A]">
-      <div className="max-w-7xl mx-auto">
-        <div className="max-w-3xl mb-16">
-          {/* Eyebrow */}
-          <div className="mb-4">
-            <span className="text-[#F4B838] font-bold text-xs sm:text-sm tracking-[0.24em] uppercase">
-              FIND US
-            </span>
+    <section id="find-us" className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-t border-[#16422E]">
+      {/* Header */}
+      <div className="max-w-2xl mb-12">
+        <div className="flex items-center gap-2 text-[#F4B838] tracking-[0.24em] uppercase text-xs font-bold mb-2">
+          <span className="w-2 h-2 rounded-full bg-[#F4B838]" />
+          <span>VISIT OUR CAFE & ROASTERY</span>
+        </div>
+        <h2 className="text-4xl sm:text-5xl font-editorial font-bold text-[#FAF8F5] tracking-tight">
+          Where to <span className="italic font-normal text-[#F4B838]">find us</span>.
+        </h2>
+        <p className="text-sm sm:text-base text-[#CAD4CD] mt-2 font-light leading-relaxed">
+          Open daily for dine-in tables, takeaway coffees, and artisan bakery delights.
+        </p>
+      </div>
+
+      {/* 4 Bento Feature Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+        {/* Card 1: Address */}
+        <div className="bg-[#071E13] p-6 rounded-2xl border border-[#16422E] flex flex-col justify-between">
+          <div className="space-y-3">
+            <div className="w-10 h-10 rounded-xl bg-[#0B281B] text-[#F4B838] border border-[#16422E] flex items-center justify-center">
+              <MapPin className="w-5 h-5" />
+            </div>
+            <h3 className="text-lg font-editorial font-bold text-[#FAF8F5]">Garden Roastery</h3>
+            <p className="text-xs text-[#CAD4CD] leading-relaxed">
+              {cafeInfo.address}
+            </p>
           </div>
-
-          {/* Headline */}
-          <h2 className="font-editorial text-5xl sm:text-6xl md:text-7xl lg:text-[76px] font-normal leading-[1.05] tracking-tight mb-6 text-[#FAF8F5]">
-            Semay Tower, <br />
-            Bole <span className="italic text-[#F4B838]">Wollo Sefer</span>.
-          </h2>
-
-          {/* Description */}
-          <p className="text-[#CAD4CD] text-lg sm:text-xl font-normal leading-relaxed mb-10">
-            Parking on site. Open around the clock, every day of the week — there is no wrong time
-            to turn up.
-          </p>
-
-          {/* Action Buttons */}
-          <div className="flex flex-wrap items-center gap-4 sm:gap-5">
-            <button
-              onClick={() => onOpenModal('directions')}
-              className="px-8 py-4 bg-[#F4B838] hover:bg-[#e4a82b] text-[#0B281B] font-bold text-sm tracking-wider uppercase rounded-full shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
-            >
-              OPEN IN MAPS
-            </button>
-
-            <a
-              href="tel:+251987222226"
-              className="px-8 py-4 bg-[#0B281B] hover:bg-[#133D2B] text-white border border-[#23503B] hover:border-[#387457] font-semibold text-sm tracking-wider uppercase rounded-full transition-all duration-200 inline-flex items-center gap-2.5"
-            >
-              <Phone size={16} className="text-[#F4B838]" />
-              <span>+251 98 722 2226</span>
-            </a>
+          <div className="mt-4 pt-3 border-t border-[#16422E] text-xs font-mono text-[#F4B838]">
+            Central District
           </div>
         </div>
 
-        {/* 4 Feature Outline Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {highlights.map((item) => (
-            <div
-              key={item.label}
-              className="rounded-2xl p-7 border border-[#194532] bg-[#0E3222]/40 backdrop-blur-xs flex flex-col justify-between min-h-[190px] transition-all hover:border-[#2C694D] hover:bg-[#0E3222]/80"
-            >
-              <div>
-                <span className="text-xs font-bold tracking-[0.2em] text-[#F4B838] uppercase block mb-3">
-                  {item.label}
-                </span>
-                <p className="font-editorial text-4xl sm:text-5xl text-white font-normal mb-3">
-                  {item.value}
-                </p>
-              </div>
-              <p className="text-sm text-[#A8BAAE] font-light">
-                {item.detail}
-              </p>
+        {/* Card 2: Hours */}
+        <div className="bg-[#071E13] p-6 rounded-2xl border border-[#16422E] flex flex-col justify-between">
+          <div className="space-y-3">
+            <div className="w-10 h-10 rounded-xl bg-[#0B281B] text-[#F4B838] border border-[#16422E] flex items-center justify-center">
+              <Clock className="w-5 h-5" />
             </div>
-          ))}
+            <h3 className="text-lg font-editorial font-bold text-[#FAF8F5]">Operating Hours</h3>
+            <p className="text-xs text-[#CAD4CD] leading-relaxed">
+              {cafeInfo.hours}
+            </p>
+          </div>
+          <div className="mt-4 pt-3 border-t border-[#16422E] text-xs font-mono text-[#B0C32E] flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#B0C32E] animate-ping" />
+            <span>Open Every Day</span>
+          </div>
+        </div>
+
+        {/* Card 3: Free Guest WiFi */}
+        <div className="bg-[#071E13] p-6 rounded-2xl border border-[#16422E] flex flex-col justify-between">
+          <div className="space-y-3">
+            <div className="w-10 h-10 rounded-xl bg-[#0B281B] text-[#F4B838] border border-[#16422E] flex items-center justify-center">
+              <Wifi className="w-5 h-5" />
+            </div>
+            <h3 className="text-lg font-editorial font-bold text-[#FAF8F5]">Guest WiFi</h3>
+            <p className="text-xs font-mono text-[#CAD4CD]">
+              SSID: <span className="text-white font-bold">{cafeInfo.wifiName}</span>
+            </p>
+          </div>
+          <div className="mt-4 pt-3 border-t border-[#16422E] flex items-center justify-between">
+            <span className="text-xs font-mono text-[#8FA597]">Pass: ••••••••</span>
+            <button
+              type="button"
+              onClick={handleCopyWifi}
+              className="px-2 py-1 rounded bg-[#16422E] hover:bg-[#F4B838] text-[#F4B838] hover:text-black text-[10px] font-bold uppercase tracking-wider transition-colors flex items-center gap-1"
+            >
+              {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+              <span>{copied ? 'Copied' : 'Copy'}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Card 4: Digital QR Ordering */}
+        <div className="bg-[#071E13] p-6 rounded-2xl border border-[#16422E] flex flex-col justify-between">
+          <div className="space-y-3">
+            <div className="w-10 h-10 rounded-xl bg-[#0B281B] text-[#F4B838] border border-[#16422E] flex items-center justify-center">
+              <QrCode className="w-5 h-5" />
+            </div>
+            <h3 className="text-lg font-editorial font-bold text-[#FAF8F5]">Table QR Stand</h3>
+            <p className="text-xs text-[#CAD4CD] leading-relaxed">
+              Generate or print contactless QR codes for Tables 1 through {cafeInfo.tableCount}.
+            </p>
+          </div>
+          <div className="mt-4 pt-3 border-t border-[#16422E]">
+            <button
+              type="button"
+              onClick={onOpenQRModal}
+              className="w-full py-2 bg-[#F4B838] hover:bg-[#E4A82B] text-black rounded-lg text-xs font-bold uppercase tracking-wider transition-colors"
+            >
+              View Table QR
+            </button>
+          </div>
         </div>
       </div>
     </section>
