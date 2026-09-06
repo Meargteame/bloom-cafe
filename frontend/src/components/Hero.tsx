@@ -40,9 +40,32 @@ export const Hero: React.FC<HeroProps> = ({
             Taste the <span className="italic font-normal text-[#F4B838]">bloom</span>.
           </h1>
 
-          <p className="text-base sm:text-lg text-[#CAD4CD] leading-relaxed max-w-2xl font-light">
-            A specialty coffee roastery, gourmet kitchen, and mocktail sanctuary. Scan our table QR stand or explore our digital menu to place your table order.
+          <p className="text-xl sm:text-2xl font-editorial text-[#F4B838] font-normal italic tracking-wide">
+            እንኳን ወደ ብሉም ካፌ በደህና መጡ
           </p>
+
+          <p className="text-base sm:text-lg text-[#CAD4CD] leading-relaxed max-w-2xl font-light">
+            A specialty coffee roastery, gourmet kitchen, and mocktail sanctuary in Adebabay Street. Scan your table QR code or explore our digital menu to place instant table orders.
+          </p>
+
+          {/* Quick Stat Chips */}
+          <div className="flex flex-wrap items-center gap-3 py-1 text-xs">
+            <div className="px-3 py-1.5 rounded-xl bg-[#071E13] border border-[#16422E] flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#B0C32E]" />
+              <span className="font-mono text-[#FAF8F5] font-bold">160+</span>
+              <span className="text-[#8FA597]">Menu Items</span>
+            </div>
+            <div className="px-3 py-1.5 rounded-xl bg-[#071E13] border border-[#16422E] flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#F4B838]" />
+              <span className="font-mono text-[#FAF8F5] font-bold">20</span>
+              <span className="text-[#8FA597]">Digital Tables</span>
+            </div>
+            <div className="px-3 py-1.5 rounded-xl bg-[#071E13] border border-[#16422E] flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#B0C32E]" />
+              <span className="font-mono text-[#FAF8F5] font-bold">ETB</span>
+              <span className="text-[#8FA597]">Local Currency (ብር)</span>
+            </div>
+          </div>
 
           {/* CTA Buttons */}
           <div className="flex flex-wrap items-center gap-4 pt-2">
