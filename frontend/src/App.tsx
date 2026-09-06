@@ -200,13 +200,11 @@ export default function App() {
   };
 
   const handleResetDefaults = () => {
-    if (confirm('Reset Bloom Cafe menu and details to default values?')) {
-      api.resetDefaults();
-      setMenuItems(initialMenuItems);
-      setCafeInfo(initialCafeInfo);
-      localStorage.removeItem(MENU_STORAGE_KEY);
-      localStorage.removeItem(CAFE_INFO_STORAGE_KEY);
-    }
+    api.resetDefaults();
+    setMenuItems(initialMenuItems);
+    setCafeInfo(initialCafeInfo);
+    localStorage.removeItem(MENU_STORAGE_KEY);
+    localStorage.removeItem(CAFE_INFO_STORAGE_KEY);
   };
 
   return (

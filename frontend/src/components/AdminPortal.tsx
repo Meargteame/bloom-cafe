@@ -20,6 +20,7 @@ import {
   UtensilsCrossed
 } from 'lucide-react';
 import { BloomLogo } from './BloomLogo';
+import { ConfirmModal } from './ConfirmModal';
 
 interface AdminPortalProps {
   menuItems: CafeMenuItem[];
@@ -51,6 +52,10 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   const [isAddingNew, setIsAddingNew] = useState<boolean>(false);
   const [filterCategory, setFilterCategory] = useState<CategoryType>('all');
   const [saveToast, setSaveToast] = useState<string>('');
+  
+  // Custom Confirmation Modals state
+  const [itemToDelete, setItemToDelete] = useState<CafeMenuItem | null>(null);
+  const [showResetConfirm, setShowResetConfirm] = useState<boolean>(false);
 
   // Live Orders state
   const [orders, setOrders] = useState<BackendOrder[]>([]);
@@ -628,13 +633,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                             </button>
                             <button
                               type="button"
-                              onClick={() => {
-                                if (confirm(`Remove "${item.name}" from Bloom Cafe menu?`)) {
-                                  onDeleteMenuItem(item.id);
-                                  showToast(`Deleted "${item.name}"`);
-                                }
-                              }}
-                              className="p-1.5 rounded-lg bg-[#0B281B] text-[#CAD4CD] hover:text-red-400 border border-[#16422E] hover:border-red-500"
+                              onClick={() => setItemToDelete(item)}
+                              className="p-1.5 rounded-lg bg-[#0B281B] text-[#CAD4CD] hover:text-red-400 border border-[#16422E] hover:border-red-500 transition-colors"
                               title="Delete item"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -737,8 +737,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
               <div className="pt-4 flex items-center justify-between border-t border-[#16422E]">
                 <button
                   type="button"
-                  onClick={onResetDefaults}
-                  className="px-4 py-2 bg-[#0B281B] hover:bg-[#123827] text-red-400 rounded-xl text-xs font-bold uppercase tracking-wider border border-[#16422E]"
+                  onClick={() => setShowResetConfirm(true)}
+                  className="px-4 py-2 bg-[#0B281B] hover:bg-[#123827] text-red-400 rounded-xl text-xs font-bold uppercase tracking-wider border border-[#16422E] transition-colors"
                 >
                   Reset To Defaults
                 </button>
@@ -754,6 +754,44 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
           </div>
         )}
       </main>
+
+      {/* Delete Item Confirmation Modal */}
+      <ConfirmModal
+        isOpen={!!itemToDelete}
+        title="Remove Menu Item"
+        message={
+          itemToDelete
+            ? `Are you sure you want to delete "${itemToDelete.name}" from the Bloom Cafe active menu catalog? This action cannot be undone.`
+            : ''
+        }
+        confirmText="Delete Item"
+        cancelText="Keep Item"
+        isDanger={true}
+        onConfirm={() => {
+          if (itemToDelete) {
+            onDeleteMenuItem(itemToDelete.id);
+            showToast(`Deleted "${itemToDelete.name}"`);
+            setItemToDelete(null);
+          }
+        }}
+        onCancel={() => setItemToDelete(null)}
+      />
+
+      {/* Reset Defaults Confirmation Modal */}
+      <ConfirmModal
+        isOpen={showResetConfirm}
+        title="Reset All Cafe Settings"
+        message="Are you sure you want to reset all Bloom Cafe menu items, cafe metadata, and hours back to factory defaults? Any unsaved custom items will be restored."
+        confirmText="Reset Defaults"
+        cancelText="Cancel"
+        isDanger={true}
+        onConfirm={() => {
+          onResetDefaults();
+          showToast('Cafe settings reset to defaults');
+          setShowResetConfirm(false);
+        }}
+        onCancel={() => setShowResetConfirm(false)}
+      />
     </div>
   );
 };
