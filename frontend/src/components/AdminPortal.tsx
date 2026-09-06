@@ -277,7 +277,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 
         {activeTab === 'menu' ? (
           /* MENU MANAGEMENT TAB */
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          <div className="space-y-6">
             {/* Quick Action & Filter Row */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div className="flex flex-wrap items-center gap-2">

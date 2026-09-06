@@ -110,17 +110,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             )}
           </button>
 
-          {/* Staff Switch */}
-          <button
-            type="button"
-            onClick={onSwitchToAdmin}
-            className="hidden sm:flex items-center gap-1 p-2 rounded-xl text-[#8FA597] hover:text-[#F4B838] hover:bg-[#071E13] text-xs transition-colors"
-            title="Switch to Staff Admin Portal"
-          >
-            <Shield className="w-4 h-4" />
-            <span className="hidden md:inline text-[10px] font-bold uppercase tracking-wider">Staff</span>
-          </button>
-
           {/* Mobile Navigation Drawer Toggle */}
           <button
             type="button"
@@ -157,24 +146,6 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             Visit & Hours
           </button>
-
-          <div className="pt-2 flex items-center justify-between border-t border-[#16422E]">
-            <button
-              type="button"
-              onClick={() => {
-                onSwitchToAdmin();
-                setMobileMenuOpen(false);
-              }}
-              className="flex items-center gap-2 text-xs text-[#F4B838] font-bold uppercase tracking-wider"
-            >
-              <Shield className="w-4 h-4" />
-              <span>Staff Portal</span>
-            </button>
-            
-            <span className="text-[10px] text-[#8FA597] font-mono">
-              Adebabay St, Addis Ababa
-            </span>
-          </div>
         </div>
       )}
     </header>

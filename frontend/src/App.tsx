@@ -19,6 +19,7 @@ import { QRCodeModal } from './components/QRCodeModal';
 import { OrderTrayDrawer } from './components/OrderTrayDrawer';
 import { ItemDetailModal } from './components/ItemDetailModal';
 import { AdminPortal } from './components/AdminPortal';
+import { AdminAuthModal } from './components/AdminAuthModal';
 
 const MENU_STORAGE_KEY = 'bloom_cafe_menu_items_v4';
 const CAFE_INFO_STORAGE_KEY = 'bloom_cafe_info_v4';
@@ -56,6 +57,7 @@ export default function App() {
   // State: Modals
   const [isQRModalOpen, setIsQRModalOpen] = useState<boolean>(false);
   const [isOrderTrayOpen, setIsOrderTrayOpen] = useState<boolean>(false);
+  const [isAdminAuthOpen, setIsAdminAuthOpen] = useState<boolean>(false);
   const [selectedDetailItem, setSelectedDetailItem] = useState<CafeMenuItem | null>(null);
 
   // Fetch menu and info from API on mount
@@ -279,7 +281,7 @@ export default function App() {
           <Footer
             cafeInfo={cafeInfo}
             onOpenQRModal={() => setIsQRModalOpen(true)}
-            onSwitchToAdmin={() => setViewMode('admin')}
+            onSwitchToAdmin={() => setIsAdminAuthOpen(true)}
             onScrollToSection={handleScrollToSection}
           />
 
@@ -295,6 +297,15 @@ export default function App() {
       )}
 
       {/* --- INTERACTIVE MODALS & DRAWERS --- */}
+      <AdminAuthModal
+        isOpen={isAdminAuthOpen}
+        onClose={() => setIsAdminAuthOpen(false)}
+        onSuccess={() => {
+          setIsAdminAuthOpen(false);
+          setViewMode('admin');
+        }}
+      />
+
       <QRCodeModal
         isOpen={isQRModalOpen}
         onClose={() => setIsQRModalOpen(false)}
