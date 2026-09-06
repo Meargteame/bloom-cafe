@@ -1,0 +1,6 @@
+{
+  "name": "IDDO Restaurant",
+  "description": "IDDO Restaurant — A kitchen and coffee bar in Semay Tower, Bole Wollo Sefer, Addis Ababa. Open 24 hours.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
