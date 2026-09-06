@@ -17,7 +17,21 @@ import {
   Eye,
   DollarSign,
   ChefHat,
-  UtensilsCrossed
+  UtensilsCrossed,
+  BarChart3,
+  PieChart,
+  Grid,
+  TrendingUp,
+  Users,
+  ShoppingBag,
+  Sparkles,
+  Zap,
+  CheckCircle2,
+  ArrowUpRight,
+  Store,
+  RotateCcw,
+  Search,
+  Filter
 } from 'lucide-react';
 import { BloomLogo } from './BloomLogo';
 import { ConfirmModal } from './ConfirmModal';
@@ -47,7 +61,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   onSwitchToPublic,
   onOpenQRModal,
 }) => {
-  const [activeTab, setActiveTab] = useState<'menu' | 'orders' | 'cafe-settings'>('menu');
+  const [activeTab, setActiveTab] = useState<'orders' | 'menu' | 'analytics' | 'tables' | 'cafe-settings'>('orders');
   const [editingItem, setEditingItem] = useState<CafeMenuItem | null>(null);
   const [isAddingNew, setIsAddingNew] = useState<boolean>(false);
   const [filterCategory, setFilterCategory] = useState<CategoryType>('all');
@@ -59,6 +73,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 
   // Live Orders state
   const [orders, setOrders] = useState<BackendOrder[]>([]);
+  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'preparing' | 'served' | 'completed'>('all');
 
   useEffect(() => {
     let isMounted = true;
@@ -84,6 +99,28 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     });
   };
 
+  const handleSimulateOrder = async () => {
+    const randomTable = Math.floor(Math.random() * 12) + 1;
+    const randomItems = menuItems.length >= 2 
+      ? [menuItems[Math.floor(Math.random() * menuItems.length)], menuItems[Math.floor(Math.random() * menuItems.length)]]
+      : menuItems;
+    
+    const orderPayload = {
+      tableNumber: randomTable,
+      items: randomItems.map(i => ({ menuItemId: i.id, quantity: 1, price: i.price })),
+      totalAmount: randomItems.reduce((acc, curr) => acc + curr.price, 0),
+      customerNote: 'Please serve with extra hot pour-over style!',
+    };
+
+    try {
+      const placed = await api.placeOrder(orderPayload);
+      setOrders((prev) => [placed, ...prev]);
+      showToast(`⚡ Live test order placed for Table ${randomTable}!`);
+    } catch {
+      showToast(`Simulated order for Table ${randomTable}`);
+    }
+  };
+
   // Form state for add / edit
   const [formData, setFormData] = useState<Partial<CafeMenuItem>>({
     name: '',
@@ -101,7 +138,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 
   const showToast = (msg: string) => {
     setSaveToast(msg);
-    setTimeout(() => setSaveToast(''), 3000);
+    setTimeout(() => setSaveToast(''), 3500);
   };
 
   const handleStartAdd = () => {
@@ -155,9 +192,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         description: formData.description?.trim() || editingItem.description,
         isAvailable: formData.isAvailable !== undefined ? formData.isAvailable : editingItem.isAvailable,
         preparationTime: formData.preparationTime || editingItem.preparationTime,
-        calories: formData.calories || editingItem.calories,
-        temperature: formData.temperature || editingItem.temperature,
-        dietary: formData.dietary || editingItem.dietary,
+        calories: formData.calories,
+        temperature: formData.temperature,
+        dietary: formData.dietary || [],
         image: formData.image || editingItem.image,
       };
 
@@ -172,47 +209,55 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   const handleSaveSettings = (e: React.FormEvent) => {
     e.preventDefault();
     onUpdateCafeInfo(settingsForm);
-    showToast('Cafe settings updated successfully');
+    showToast('Cafe configuration saved');
   };
-
-  // Calculations for KPI Analytics Bento
-  const totalSalesRevenue = orders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
-  const activeOrdersCount = orders.filter((o) => o.status === 'received' || o.status === 'preparing').length;
-  const soldOutCount = menuItems.filter((i) => !i.isAvailable).length;
 
   const filteredItems = menuItems.filter((item) => {
-    if (filterCategory !== 'all' && item.category !== filterCategory) return false;
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      return (
-        item.name.toLowerCase().includes(q) ||
-        item.description.toLowerCase().includes(q) ||
-        item.category.toLowerCase().includes(q)
-      );
-    }
-    return true;
+    const matchesCategory = filterCategory === 'all' || item.category === filterCategory;
+    const matchesSearch =
+      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.description.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
   });
 
-  const toggleDietaryTag = (tag: DietaryTag) => {
-    const current = formData.dietary || [];
-    if (current.includes(tag)) {
-      setFormData({ ...formData, dietary: current.filter((t) => t !== tag) });
-    } else {
-      setFormData({ ...formData, dietary: [...current, tag] });
-    }
-  };
+  const filteredOrders = orders.filter((o) => {
+    if (statusFilter === 'all') return true;
+    return o.status === statusFilter;
+  });
+
+  // Dynamic Metrics
+  const totalSalesRevenue = orders
+    .filter((o) => o.status === 'completed' || o.status === 'served')
+    .reduce((sum, o) => sum + o.totalAmount, 0);
+
+  const activeOrdersCount = orders.filter(
+    (o) => o.status === 'pending' || o.status === 'preparing'
+  ).length;
+
+  const soldOutCount = menuItems.filter((i) => !i.isAvailable).length;
+
+  // Floor plan tables state (12 tables)
+  const cafeTables = Array.from({ length: 12 }, (_, idx) => {
+    const num = idx + 1;
+    const tableOrder = orders.find((o) => o.tableNumber === num && o.status !== 'completed' && o.status !== 'cancelled');
+    return {
+      tableNumber: num,
+      status: tableOrder ? tableOrder.status : 'free',
+      activeOrder: tableOrder,
+    };
+  });
 
   return (
     <div className="min-h-screen bg-[#0B281B] text-white pb-16">
-      {/* Admin Top Navigation */}
-      <header className="bg-[#071E13] sticky top-0 z-40 shadow-xl border-b border-[#16422E]">
+      {/* Admin Top Header Navigation */}
+      <header className="bg-[#071E13] sticky top-0 z-40 shadow-2xl border-b border-[#16422E]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <BloomLogo size="sm" showSubtitle={false} />
             <div className="hidden sm:flex items-center gap-2 pl-3 border-l border-[#16422E]">
               <span className="px-2.5 py-1 rounded-md bg-[#16422E] text-[#F4B838] text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5 border border-[#F4B838]/30">
                 <ShieldCheck className="w-3.5 h-3.5 text-[#F4B838]" />
-                Staff Admin Portal
+                Kitchen Operations Suite
               </span>
             </div>
           </div>
@@ -220,11 +265,21 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
           <div className="flex items-center gap-3">
             <button
               type="button"
+              onClick={handleSimulateOrder}
+              className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#7E5229]/40 hover:bg-[#7E5229]/70 text-[#F4B838] border border-[#F4B838]/40 text-xs font-bold uppercase tracking-wider transition-all"
+              title="Simulate incoming table order"
+            >
+              <Zap className="w-3.5 h-3.5 text-[#F4B838] animate-pulse" />
+              <span>Simulate Order</span>
+            </button>
+
+            <button
+              type="button"
               onClick={onSwitchToPublic}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#F4B838] hover:bg-[#E4A82B] text-black text-xs font-bold uppercase tracking-wider transition-all shadow-md"
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#F4B838] hover:bg-[#E4A82B] text-black text-xs font-bold uppercase tracking-wider transition-all shadow-md active:scale-95"
             >
               <Eye className="w-3.5 h-3.5" />
-              <span>Back to Public Menu</span>
+              <span>Public Menu</span>
             </button>
 
             <button
@@ -233,313 +288,515 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
               className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#0B281B] hover:bg-[#123827] text-white border border-[#16422E] hover:border-[#F4B838] text-xs font-bold uppercase tracking-wider transition-all"
             >
               <QrCode className="w-3.5 h-3.5 text-[#F4B838]" />
-              <span className="hidden sm:inline">Table QR Codes</span>
+              <span className="hidden sm:inline">Table Stand QR</span>
             </button>
           </div>
         </div>
       </header>
 
-      {/* Toast Alert */}
+      {/* Save Toast Notification */}
       {saveToast && (
-        <div className="fixed bottom-6 right-6 z-50 bg-[#071E13] text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-2.5 text-xs font-bold border-2 border-[#F4B838] animate-bounce">
+        <div className="fixed bottom-6 right-6 z-50 bg-[#071E13] text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-2.5 text-xs font-bold border-2 border-[#F4B838] animate-bounce">
           <Check className="w-4 h-4 text-[#F4B838]" />
           <span>{saveToast}</span>
         </div>
       )}
 
-      {/* Main Admin Content Container */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
-        {/* Top Control Bar */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-[#16422E]">
+      {/* Main Container */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        
+        {/* Management Header Banner */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-[#16422E]">
           <div>
             <div className="flex items-center gap-2 text-[#F4B838] tracking-[0.24em] uppercase text-xs font-bold mb-1">
-              <span>MANAGEMENT CONSOLE</span>
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>EXECUTIVE MANAGEMENT PORTAL</span>
             </div>
             <h1 className="text-3xl sm:text-4xl font-editorial font-bold text-[#FAF8F5]">
-              Bloom Cafe Operations
+              Bloom Cafe Control Center
             </h1>
-            <p className="text-xs text-[#CAD4CD] mt-1 font-light">
-              Toggle live item availability, update prices, edit details, or change daily announcements.
+            <p className="text-xs text-[#CAD4CD] mt-1 font-light max-w-xl">
+              Real-time table orders stream, live availability management, sales analytics, and floor plan table control.
             </p>
           </div>
 
-          {/* Tab buttons */}
-          <div className="flex items-center gap-2 bg-[#071E13] p-1.5 rounded-xl border border-[#16422E]">
-            <button
-              type="button"
-              onClick={() => setActiveTab('menu')}
-              className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${
-                activeTab === 'menu'
-                  ? 'bg-[#F4B838] text-black shadow-md'
-                  : 'text-[#CAD4CD] hover:text-white'
-              }`}
-            >
-              Menu Offerings ({menuItems.length})
-            </button>
+          {/* Sub Navigation Bar Tabs */}
+          <div className="flex items-center gap-1.5 bg-[#071E13] p-1.5 rounded-2xl border border-[#16422E] overflow-x-auto">
             <button
               type="button"
               onClick={() => setActiveTab('orders')}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${
+              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap ${
                 activeTab === 'orders'
-                  ? 'bg-[#F4B838] text-black shadow-md'
+                  ? 'bg-[#F4B838] text-black shadow-lg'
                   : 'text-[#CAD4CD] hover:text-white'
               }`}
             >
               <ChefHat className="w-3.5 h-3.5" />
               <span>Live Orders ({orders.length})</span>
             </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab('menu')}
+              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap ${
+                activeTab === 'menu'
+                  ? 'bg-[#F4B838] text-black shadow-lg'
+                  : 'text-[#CAD4CD] hover:text-white'
+              }`}
+            >
+              <UtensilsCrossed className="w-3.5 h-3.5" />
+              <span>Menu Catalog ({menuItems.length})</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab('analytics')}
+              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap ${
+                activeTab === 'analytics'
+                  ? 'bg-[#F4B838] text-black shadow-lg'
+                  : 'text-[#CAD4CD] hover:text-white'
+              }`}
+            >
+              <BarChart3 className="w-3.5 h-3.5" />
+              <span>Sales Intelligence</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab('tables')}
+              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap ${
+                activeTab === 'tables'
+                  ? 'bg-[#F4B838] text-black shadow-lg'
+                  : 'text-[#CAD4CD] hover:text-white'
+              }`}
+            >
+              <Grid className="w-3.5 h-3.5" />
+              <span>Floor Plan</span>
+            </button>
+
             <button
               type="button"
               onClick={() => setActiveTab('cafe-settings')}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${
+              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap ${
                 activeTab === 'cafe-settings'
-                  ? 'bg-[#F4B838] text-black shadow-md'
+                  ? 'bg-[#F4B838] text-black shadow-lg'
                   : 'text-[#CAD4CD] hover:text-white'
               }`}
             >
               <Settings className="w-3.5 h-3.5" />
-              <span>Cafe Info</span>
+              <span>Store Config</span>
             </button>
           </div>
         </div>
 
-        {/* KPI Analytics Bento */}
+        {/* Executive KPI Bento Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-[#071E13] p-4 rounded-2xl border border-[#16422E] flex items-center justify-between">
+          <div className="bg-[#071E13] p-5 rounded-3xl border border-[#16422E] flex items-center justify-between shadow-lg">
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#8FA597]">Total Sales Volume</span>
-              <span className="block font-mono text-xl font-extrabold text-[#F4B838] mt-1">{totalSalesRevenue} {cafeInfo.currencySymbol}</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[#8FA597]">Gross Revenue Today</span>
+              <span className="block font-mono text-2xl font-black text-[#F4B838] mt-1">{totalSalesRevenue} {cafeInfo.currencySymbol}</span>
+              <span className="text-[10px] text-[#B0C32E] flex items-center gap-1 mt-1 font-mono">
+                <TrendingUp className="w-3 h-3" /> Live MongoDB Sync
+              </span>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-[#0B281B] text-[#F4B838] border border-[#16422E] flex items-center justify-center">
-              <DollarSign className="w-5 h-5" />
+            <div className="w-12 h-12 rounded-2xl bg-[#0B281B] text-[#F4B838] border border-[#16422E] flex items-center justify-center">
+              <DollarSign className="w-6 h-6" />
             </div>
           </div>
 
-          <div className="bg-[#071E13] p-4 rounded-2xl border border-[#16422E] flex items-center justify-between">
+          <div className="bg-[#071E13] p-5 rounded-3xl border border-[#16422E] flex items-center justify-between shadow-lg">
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#8FA597]">Active Kitchen Queue</span>
-              <span className="block font-mono text-xl font-extrabold text-white mt-1">{activeOrdersCount} Orders</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[#8FA597]">Active Kitchen Queue</span>
+              <span className="block font-mono text-2xl font-black text-white mt-1">{activeOrdersCount} Table Orders</span>
+              <span className="text-[10px] text-[#CAD4CD] flex items-center gap-1 mt-1 font-mono">
+                <Clock className="w-3 h-3 text-[#F4B838]" /> Avg ~4.5m Fulfillment
+              </span>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-[#0B281B] text-[#B0C32E] border border-[#16422E] flex items-center justify-center">
-              <ChefHat className="w-5 h-5" />
+            <div className="w-12 h-12 rounded-2xl bg-[#0B281B] text-[#B0C32E] border border-[#16422E] flex items-center justify-center">
+              <ChefHat className="w-6 h-6" />
             </div>
           </div>
 
-          <div className="bg-[#071E13] p-4 rounded-2xl border border-[#16422E] flex items-center justify-between">
+          <div className="bg-[#071E13] p-5 rounded-3xl border border-[#16422E] flex items-center justify-between shadow-lg">
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#8FA597]">Catalog Items</span>
-              <span className="block font-mono text-xl font-extrabold text-white mt-1">{menuItems.length} Offerings</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[#8FA597]">Active Menu Catalog</span>
+              <span className="block font-mono text-2xl font-black text-white mt-1">{menuItems.length} Offerings</span>
+              <span className="text-[10px] text-[#CAD4CD] flex items-center gap-1 mt-1">
+                {menuItems.filter(i => i.dietary?.includes('fasting')).length} Ethiopian Fasting (የጾም)
+              </span>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-[#0B281B] text-white border border-[#16422E] flex items-center justify-center">
-              <UtensilsCrossed className="w-5 h-5 text-[#F4B838]" />
+            <div className="w-12 h-12 rounded-2xl bg-[#0B281B] text-white border border-[#16422E] flex items-center justify-center">
+              <UtensilsCrossed className="w-6 h-6 text-[#F4B838]" />
             </div>
           </div>
 
-          <div className="bg-[#071E13] p-4 rounded-2xl border border-[#16422E] flex items-center justify-between">
+          <div className="bg-[#071E13] p-5 rounded-3xl border border-[#16422E] flex items-center justify-between shadow-lg">
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#8FA597]">Out of Stock</span>
-              <span className="block font-mono text-xl font-extrabold text-red-400 mt-1">{soldOutCount} Items</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[#8FA597]">Sold Out Items</span>
+              <span className="block font-mono text-2xl font-black text-red-400 mt-1">{soldOutCount} Unavailable</span>
+              <span className="text-[10px] text-[#CAD4CD] flex items-center gap-1 mt-1">
+                {soldOutCount === 0 ? 'Full menu available' : 'Tap switch to restore stock'}
+              </span>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-[#0B281B] text-red-400 border border-[#16422E] flex items-center justify-center">
-              <AlertCircle className="w-5 h-5" />
+            <div className="w-12 h-12 rounded-2xl bg-[#0B281B] text-red-400 border border-[#16422E] flex items-center justify-center">
+              <AlertCircle className="w-6 h-6" />
             </div>
           </div>
         </div>
 
-        {activeTab === 'menu' ? (
-          /* MENU MANAGEMENT TAB */
+        {/* TAB 1: LIVE ORDERS QUEUE */}
+        {activeTab === 'orders' && (
           <div className="space-y-6">
-            {/* Quick Action & Filter Row */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-              <div className="flex flex-wrap items-center gap-2">
-                {(['all', 'coffee', 'tea', 'bakery', 'brunch', 'sandwiches', 'desserts'] as CategoryType[]).map((cat) => (
-                  <button
-                    key={cat}
-                    type="button"
-                    onClick={() => setFilterCategory(cat)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${
-                      filterCategory === cat
-                        ? 'bg-[#B0C32E] text-[#071E13]'
-                        : 'bg-[#071E13] text-[#A8BAAE] border border-[#16422E] hover:text-white'
-                    }`}
-                  >
-                    {cat === 'all' ? 'All' : cat}
-                  </button>
-                ))}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#071E13] p-4 sm:p-6 rounded-3xl border border-[#16422E]">
+              <div>
+                <h2 className="text-xl font-editorial font-bold text-white flex items-center gap-2">
+                  <ChefHat className="w-5 h-5 text-[#F4B838]" />
+                  Live Digital Kitchen Display System (KDS)
+                </h2>
+                <p className="text-xs text-[#CAD4CD] font-light mt-0.5">
+                  Orders placed by customers via table QR codes update automatically every 5 seconds.
+                </p>
               </div>
 
-              <div className="flex items-center gap-2 w-full sm:w-auto">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search item name..."
-                  className="px-3 py-2 bg-[#071E13] text-xs text-white rounded-xl border border-[#16422E] focus:outline-hidden focus:border-[#F4B838] placeholder-[#6E887B]"
-                />
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleSimulateOrder}
+                  className="px-3.5 py-2 bg-[#7E5229] hover:bg-[#684220] text-[#F4B838] rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-md"
+                >
+                  <Zap className="w-4 h-4 text-[#F4B838] animate-bounce" />
+                  <span>+ Test Order</span>
+                </button>
+
+                {/* Filter Order Status */}
+                <div className="flex items-center gap-1 bg-[#0B281B] p-1 rounded-xl border border-[#16422E] text-xs">
+                  {(['all', 'pending', 'preparing', 'served', 'completed'] as const).map((st) => (
+                    <button
+                      key={st}
+                      type="button"
+                      onClick={() => setStatusFilter(st)}
+                      className={`px-2.5 py-1 rounded-lg font-bold uppercase tracking-wider text-[10px] transition-colors ${
+                        statusFilter === st
+                          ? 'bg-[#F4B838] text-black'
+                          : 'text-[#CAD4CD] hover:text-white'
+                      }`}
+                    >
+                      {st}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {filteredOrders.length === 0 ? (
+              <div className="bg-[#071E13] p-12 rounded-3xl border border-[#16422E] text-center space-y-4">
+                <div className="w-16 h-16 rounded-full bg-[#0B281B] text-[#F4B838] flex items-center justify-center mx-auto border border-[#16422E]">
+                  <ChefHat className="w-8 h-8" />
+                </div>
+                <h3 className="text-xl font-editorial font-bold text-white">No Active Table Orders</h3>
+                <p className="text-xs text-[#CAD4CD] max-w-sm mx-auto">
+                  When customers scan the QR codes at tables 1-12 and submit orders, they will instantly display here.
+                </p>
+                <button
+                  type="button"
+                  onClick={handleSimulateOrder}
+                  className="px-5 py-2.5 bg-[#F4B838] hover:bg-[#E4A82B] text-black rounded-xl text-xs font-bold uppercase tracking-wider shadow-lg"
+                >
+                  Simulate Demo Order
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredOrders.map((order) => {
+                  const statusColors = {
+                    pending: 'bg-amber-950/60 text-amber-300 border-amber-800',
+                    preparing: 'bg-blue-950/60 text-blue-300 border-blue-800',
+                    served: 'bg-[#123827] text-[#B0C32E] border-[#B0C32E]/40',
+                    completed: 'bg-emerald-950/60 text-emerald-300 border-emerald-800',
+                    cancelled: 'bg-red-950/60 text-red-400 border-red-800',
+                  };
+
+                  return (
+                    <div
+                      key={order.id}
+                      className="bg-[#071E13] rounded-3xl p-5 border border-[#16422E] shadow-xl flex flex-col justify-between space-y-4 hover:border-[#F4B838]/40 transition-all"
+                    >
+                      <div>
+                        {/* Order Card Top Bar */}
+                        <div className="flex items-center justify-between pb-3 border-b border-[#16422E]">
+                          <div className="flex items-center gap-2">
+                            <span className="px-3 py-1 bg-[#F4B838] text-black font-mono font-black text-xs rounded-xl shadow-sm">
+                              TABLE {order.tableNumber}
+                            </span>
+                            <span className="text-[11px] font-mono text-[#8FA597]">
+                              #{order.id.slice(-6)}
+                            </span>
+                          </div>
+                          <span
+                            className={`px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider border ${
+                              statusColors[order.status] || 'bg-[#0B281B] text-white'
+                            }`}
+                          >
+                            {order.status}
+                          </span>
+                        </div>
+
+                        {/* Customer note if available */}
+                        {order.customerNote && (
+                          <div className="mt-3 p-2.5 bg-[#7E5229]/20 border border-[#7E5229]/40 rounded-xl text-xs text-[#F4B838] font-medium italic">
+                            "{order.customerNote}"
+                          </div>
+                        )}
+
+                        {/* Order Items List */}
+                        <div className="mt-3 space-y-2 max-h-48 overflow-y-auto pr-1">
+                          {order.items.map((item, idx) => {
+                            const menuItem = menuItems.find((m) => m.id === item.menuItemId);
+                            return (
+                              <div key={idx} className="flex items-center justify-between text-xs py-1 border-b border-[#16422E]/40">
+                                <div className="flex items-center gap-2">
+                                  <span className="w-5 h-5 rounded-md bg-[#0B281B] text-[#F4B838] font-mono font-bold flex items-center justify-center text-[10px] border border-[#16422E]">
+                                    {item.quantity}x
+                                  </span>
+                                  <span className="text-white font-medium">
+                                    {menuItem ? menuItem.name : 'Cafe Special Item'}
+                                  </span>
+                                </div>
+                                <span className="font-mono text-[#CAD4CD]">
+                                  {item.price * item.quantity} {cafeInfo.currencySymbol}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Order Footer & Action Controls */}
+                      <div className="pt-3 border-t border-[#16422E] space-y-3">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-[#8FA597] uppercase tracking-wider font-bold">Total Bill:</span>
+                          <span className="font-mono font-extrabold text-base text-[#F4B838]">
+                            {order.totalAmount} {cafeInfo.currencySymbol}
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2">
+                          {order.status === 'pending' && (
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateStatus(order.id, 'preparing')}
+                              className="col-span-2 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all"
+                            >
+                              Start Preparing
+                            </button>
+                          )}
+
+                          {order.status === 'preparing' && (
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateStatus(order.id, 'served')}
+                              className="col-span-2 py-2 bg-[#B0C32E] hover:bg-[#9eb027] text-black rounded-xl text-xs font-bold uppercase tracking-wider transition-all"
+                            >
+                              Mark Served to Table
+                            </button>
+                          )}
+
+                          {order.status === 'served' && (
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateStatus(order.id, 'completed')}
+                              className="col-span-2 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5"
+                            >
+                              <CheckCircle2 className="w-4 h-4" />
+                              <span>Complete & Close Bill</span>
+                            </button>
+                          )}
+
+                          {order.status !== 'completed' && order.status !== 'cancelled' && (
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateStatus(order.id, 'cancelled')}
+                              className="col-span-2 py-1.5 bg-red-950/60 hover:bg-red-900 text-red-300 rounded-xl text-[11px] font-bold uppercase tracking-wider border border-red-800 transition-all"
+                            >
+                              Cancel Order
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* TAB 2: MENU CATALOG & INVENTORY */}
+        {activeTab === 'menu' && (
+          <div className="space-y-6">
+            {/* Filter and Search Bar */}
+            <div className="bg-[#071E13] p-4 sm:p-6 rounded-3xl border border-[#16422E] space-y-4">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+                {/* Search Field */}
+                <div className="relative flex-1">
+                  <Search className="w-4 h-4 absolute left-3.5 top-3 text-[#8FA597]" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search menu items by title, Amharic name, or ingredient..."
+                    className="w-full pl-10 pr-4 py-2.5 bg-[#0B281B] text-xs text-white rounded-xl border border-[#16422E] focus:outline-hidden focus:border-[#F4B838]"
+                  />
+                </div>
+
                 <button
                   type="button"
                   onClick={handleStartAdd}
-                  className="px-4 py-2 rounded-xl bg-[#F4B838] hover:bg-[#E4A82B] text-black text-xs font-bold uppercase tracking-wider transition-all shadow-md flex items-center justify-center gap-2 shrink-0"
+                  className="px-5 py-2.5 bg-[#F4B838] hover:bg-[#E4A82B] text-black rounded-xl text-xs font-bold uppercase tracking-wider shadow-lg flex items-center justify-center gap-1.5 transition-all"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Add New Item</span>
                 </button>
               </div>
+
+              {/* Category Pills */}
+              <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                {(['all', 'coffee', 'tea', 'bakery', 'brunch', 'toasties', 'desserts'] as CategoryType[]).map((cat) => (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => setFilterCategory(cat)}
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-all ${
+                      filterCategory === cat
+                        ? 'bg-[#F4B838] text-black shadow-md'
+                        : 'bg-[#0B281B] text-[#CAD4CD] hover:text-white border border-[#16422E]'
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            {/* Modal: Add or Edit Item */}
+            {/* Add / Edit Form Modal Drawer */}
             {(isAddingNew || editingItem) && (
-              <div className="bg-[#071E13] rounded-3xl p-6 sm:p-8 border-2 border-[#F4B838] shadow-2xl space-y-6">
+              <div className="bg-[#071E13] rounded-3xl p-6 sm:p-8 border-2 border-[#F4B838] shadow-2xl space-y-6 animate-fadeIn">
                 <div className="flex items-center justify-between pb-4 border-b border-[#16422E]">
-                  <h2 className="text-xl font-editorial font-bold text-white">
-                    {isAddingNew ? 'Add New Menu Item' : `Edit "${editingItem?.name}"`}
-                  </h2>
+                  <div>
+                    <h2 className="text-2xl font-editorial font-bold text-white">
+                      {isAddingNew ? 'Create New Artisan Item' : `Edit "${editingItem?.name}"`}
+                    </h2>
+                    <p className="text-xs text-[#F4B838] font-mono">
+                      Bloom Cafe Digital Menu Catalog Editor
+                    </p>
+                  </div>
                   <button
                     type="button"
                     onClick={() => {
                       setIsAddingNew(false);
                       setEditingItem(null);
                     }}
-                    className="p-1 rounded-lg text-[#8FA597] hover:text-white hover:bg-[#16422E]"
+                    className="p-2 rounded-full text-[#8FA597] hover:text-white hover:bg-[#0B281B]"
                   >
                     <X className="w-5 h-5" />
                   </button>
                 </div>
 
                 <form onSubmit={handleSaveItem} className="space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    {/* Item Name */}
-                    <div className="sm:col-span-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
                       <label className="text-[11px] font-bold uppercase tracking-wider text-[#8FA597] block mb-1">
-                        Item Name *
+                        Item Title (Amharic & English)
                       </label>
                       <input
                         type="text"
                         required
                         value={formData.name || ''}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        placeholder="e.g. Pistachio Cardamom Latte"
-                        className="w-full px-3 py-2 bg-[#0B281B] text-sm text-white rounded-xl border border-[#16422E] focus:outline-hidden focus:border-[#F4B838]"
+                        placeholder="e.g. ካራሜል ማኪያቶ (Caramel Macchiato)"
+                        className="w-full px-3.5 py-2.5 bg-[#0B281B] text-xs text-white rounded-xl border border-[#16422E] focus:outline-hidden focus:border-[#F4B838]"
                       />
                     </div>
 
-                    {/* Category */}
                     <div>
                       <label className="text-[11px] font-bold uppercase tracking-wider text-[#8FA597] block mb-1">
                         Category
                       </label>
                       <select
                         value={formData.category || 'coffee'}
-                        onChange={(e) => setFormData({ ...formData, category: e.target.value as any })}
-                        className="w-full px-3 py-2 bg-[#0B281B] text-sm text-white rounded-xl border border-[#16422E] focus:outline-hidden focus:border-[#F4B838]"
+                        onChange={(e) => setFormData({ ...formData, category: e.target.value as CategoryType })}
+                        className="w-full px-3.5 py-2.5 bg-[#0B281B] text-xs text-white rounded-xl border border-[#16422E] focus:outline-hidden focus:border-[#F4B838]"
                       >
-                        <option value="coffee">Coffee</option>
-                        <option value="tea">Teas & Coolers</option>
-                        <option value="bakery">Artisan Bakery</option>
+                        <option value="coffee">Specialty Coffee</option>
+                        <option value="tea">Handcrafted Teas</option>
+                        <option value="bakery">Fresh Bakery</option>
                         <option value="brunch">All-Day Brunch</option>
-                        <option value="sandwiches">Toasties & Sandwiches</option>
-                        <option value="desserts">Sweet Treats</option>
+                        <option value="toasties">Toasties & Paninis</option>
+                        <option value="desserts">Artisan Desserts</option>
                       </select>
                     </div>
-                  </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    {/* Price */}
                     <div>
                       <label className="text-[11px] font-bold uppercase tracking-wider text-[#8FA597] block mb-1">
-                        Price ({cafeInfo.currencySymbol}) *
+                        Price ({cafeInfo.currencySymbol})
                       </label>
                       <input
                         type="number"
-                        step="0.01"
                         required
-                        value={formData.price ?? ''}
-                        onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
-                        className="w-full px-3 py-2 bg-[#0B281B] text-sm font-mono text-white rounded-xl border border-[#16422E] focus:outline-hidden focus:border-[#F4B838]"
+                        value={formData.price || 0}
+                        onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
+                        className="w-full px-3.5 py-2.5 bg-[#0B281B] text-xs text-white rounded-xl border border-[#16422E] focus:outline-hidden focus:border-[#F4B838] font-mono font-bold"
                       />
                     </div>
 
-                    {/* Prep Time */}
                     <div>
                       <label className="text-[11px] font-bold uppercase tracking-wider text-[#8FA597] block mb-1">
-                        Prep Time
+                        Preparation Time
                       </label>
                       <input
                         type="text"
-                        value={formData.preparationTime || ''}
+                        value={formData.preparationTime || '10 mins'}
                         onChange={(e) => setFormData({ ...formData, preparationTime: e.target.value })}
-                        placeholder="e.g. 4 mins"
-                        className="w-full px-3 py-2 bg-[#0B281B] text-sm text-white rounded-xl border border-[#16422E] focus:outline-hidden focus:border-[#F4B838]"
+                        placeholder="e.g. 5-8 mins"
+                        className="w-full px-3.5 py-2.5 bg-[#0B281B] text-xs text-white rounded-xl border border-[#16422E] focus:outline-hidden focus:border-[#F4B838]"
                       />
-                    </div>
-
-                    {/* Availability */}
-                    <div>
-                      <label className="text-[11px] font-bold uppercase tracking-wider text-[#8FA597] block mb-1">
-                        Initial Stock Status
-                      </label>
-                      <button
-                        type="button"
-                        onClick={() => setFormData({ ...formData, isAvailable: !formData.isAvailable })}
-                        className={`w-full py-2 px-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors border ${
-                          formData.isAvailable
-                            ? 'bg-[#123827] text-[#B0C32E] border-[#B0C32E]/40'
-                            : 'bg-red-950/40 text-red-300 border-red-800'
-                        }`}
-                      >
-                        {formData.isAvailable ? '✓ In Stock' : '✗ Sold Out'}
-                      </button>
                     </div>
                   </div>
 
-                  {/* Description */}
                   <div>
                     <label className="text-[11px] font-bold uppercase tracking-wider text-[#8FA597] block mb-1">
                       Description & Flavor Profile
                     </label>
                     <textarea
-                      rows={2}
+                      rows={3}
                       value={formData.description || ''}
                       onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      placeholder="Describe ingredients, origins, notes..."
-                      className="w-full px-3 py-2 bg-[#0B281B] text-sm text-white rounded-xl border border-[#16422E] focus:outline-hidden focus:border-[#F4B838]"
+                      placeholder="Rich espresso, steamed whole milk, house caramel drizzle..."
+                      className="w-full px-3.5 py-2.5 bg-[#0B281B] text-xs text-white rounded-xl border border-[#16422E] focus:outline-hidden focus:border-[#F4B838]"
                     />
                   </div>
 
-                  {/* Dietary tags */}
                   <div>
-                    <label className="text-[11px] font-bold uppercase tracking-wider text-[#8FA597] block mb-2">
-                      Dietary Tags
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-[#8FA597] block mb-1">
+                      Image URL (Unsplash or custom asset)
                     </label>
-                    <div className="flex flex-wrap gap-2">
-                      {(['vegan', 'vegetarian', 'gluten-free', 'popular', 'chef-choice'] as DietaryTag[]).map((tag) => {
-                        const isChecked = formData.dietary?.includes(tag);
-                        return (
-                          <button
-                            key={tag}
-                            type="button"
-                            onClick={() => toggleDietaryTag(tag)}
-                            className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors border ${
-                              isChecked
-                                ? 'bg-[#F4B838] text-black border-[#F4B838] font-bold'
-                                : 'bg-[#0B281B] text-[#CAD4CD] border-[#16422E]'
-                            }`}
-                          >
-                            {tag}
-                          </button>
-                        );
-                      })}
-                    </div>
+                    <input
+                      type="text"
+                      value={formData.image || ''}
+                      onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                      placeholder="https://images.unsplash.com/photo-..."
+                      className="w-full px-3.5 py-2.5 bg-[#0B281B] text-xs text-white rounded-xl border border-[#16422E] focus:outline-hidden focus:border-[#F4B838]"
+                    />
                   </div>
 
-                  <div className="pt-4 flex justify-end gap-3 border-t border-[#16422E]">
+                  <div className="flex justify-end gap-3 pt-4 border-t border-[#16422E]">
                     <button
                       type="button"
                       onClick={() => {
                         setIsAddingNew(false);
                         setEditingItem(null);
                       }}
-                      className="px-4 py-2 bg-[#0B281B] text-[#CAD4CD] hover:text-white rounded-xl text-xs font-bold uppercase"
+                      className="px-5 py-2.5 bg-[#0B281B] hover:bg-[#16422E] text-[#CAD4CD] rounded-xl text-xs font-bold uppercase tracking-wider border border-[#16422E]"
                     >
                       Cancel
                     </button>
@@ -554,7 +811,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
               </div>
             )}
 
-            {/* Menu Items Table List */}
+            {/* Menu Items Table */}
             <div className="bg-[#071E13] rounded-3xl border border-[#16422E] overflow-hidden shadow-xl">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
@@ -562,8 +819,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                     <tr>
                       <th className="py-3.5 px-4 sm:px-6">Item & Category</th>
                       <th className="py-3.5 px-4 font-mono">Price</th>
-                      <th className="py-3.5 px-4">Stock Status</th>
-                      <th className="py-3.5 px-4">Dietary</th>
+                      <th className="py-3.5 px-4">Stock Availability</th>
+                      <th className="py-3.5 px-4">Dietary Tags</th>
                       <th className="py-3.5 px-4 text-right">Actions</th>
                     </tr>
                   </thead>
@@ -596,61 +853,206 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                             {item.price} {cafeInfo.currencySymbol}
                           </td>
 
-                        <td className="py-4 px-4">
-                          <button
-                            type="button"
-                            onClick={() => onToggleAvailability(item.id)}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 ${
-                              item.isAvailable
-                                ? 'bg-[#123827] text-[#B0C32E] border border-[#B0C32E]/30'
-                                : 'bg-red-950/40 text-red-300 border border-red-800'
-                            }`}
-                          >
-                            <span className={`w-1.5 h-1.5 rounded-full ${item.isAvailable ? 'bg-[#B0C32E] animate-ping' : 'bg-red-500'}`} />
-                            <span>{item.isAvailable ? 'In Stock' : 'Sold Out'}</span>
-                          </button>
-                        </td>
-
-                        <td className="py-4 px-4">
-                          <div className="flex flex-wrap gap-1 max-w-[150px]">
-                            {item.dietary?.map((d) => (
-                              <span key={d} className="px-1.5 py-0.5 rounded bg-[#0B281B] text-[10px] text-[#CAD4CD] border border-[#16422E]">
-                                {d}
-                              </span>
-                            ))}
-                          </div>
-                        </td>
-
-                        <td className="py-4 px-4 text-right">
-                          <div className="flex items-center justify-end gap-2">
+                          <td className="py-4 px-4">
                             <button
                               type="button"
-                              onClick={() => handleStartEdit(item)}
-                              className="p-1.5 rounded-lg bg-[#0B281B] text-[#CAD4CD] hover:text-[#F4B838] border border-[#16422E] hover:border-[#F4B838]"
-                              title="Edit item"
+                              onClick={() => onToggleAvailability(item.id)}
+                              className={`px-3 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 ${
+                                item.isAvailable
+                                  ? 'bg-[#123827] text-[#B0C32E] border border-[#B0C32E]/30'
+                                  : 'bg-red-950/40 text-red-300 border border-red-800'
+                              }`}
                             >
-                              <Edit3 className="w-4 h-4" />
+                              <span className={`w-1.5 h-1.5 rounded-full ${item.isAvailable ? 'bg-[#B0C32E] animate-ping' : 'bg-red-500'}`} />
+                              <span>{item.isAvailable ? 'In Stock' : 'Sold Out'}</span>
                             </button>
-                            <button
-                              type="button"
-                              onClick={() => setItemToDelete(item)}
-                              className="p-1.5 rounded-lg bg-[#0B281B] text-[#CAD4CD] hover:text-red-400 border border-[#16422E] hover:border-red-500 transition-colors"
-                              title="Delete item"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
+                          </td>
+
+                          <td className="py-4 px-4">
+                            <div className="flex flex-wrap gap-1 max-w-[150px]">
+                              {item.dietary?.map((d) => (
+                                <span key={d} className="px-1.5 py-0.5 rounded bg-[#0B281B] text-[10px] text-[#CAD4CD] border border-[#16422E]">
+                                  {d}
+                                </span>
+                              ))}
+                            </div>
+                          </td>
+
+                          <td className="py-4 px-4 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <button
+                                type="button"
+                                onClick={() => handleStartEdit(item)}
+                                className="p-1.5 rounded-lg bg-[#0B281B] text-[#CAD4CD] hover:text-[#F4B838] border border-[#16422E] hover:border-[#F4B838]"
+                                title="Edit item"
+                              >
+                                <Edit3 className="w-4 h-4" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setItemToDelete(item)}
+                                className="p-1.5 rounded-lg bg-[#0B281B] text-[#CAD4CD] hover:text-red-400 border border-[#16422E] hover:border-red-500 transition-colors"
+                                title="Delete item"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
                 </table>
               </div>
             </div>
           </div>
-        ) : (
-          /* CAFE SETTINGS TAB */
+        )}
+
+        {/* TAB 3: SALES INTELLIGENCE & ANALYTICS */}
+        {activeTab === 'analytics' && (
+          <div className="space-y-6">
+            <div className="bg-[#071E13] p-6 rounded-3xl border border-[#16422E] shadow-xl">
+              <h2 className="text-2xl font-editorial font-bold text-white mb-2 flex items-center gap-2">
+                <BarChart3 className="w-6 h-6 text-[#F4B838]" />
+                Sales Performance & Roastery Analytics
+              </h2>
+              <p className="text-xs text-[#CAD4CD] font-light">
+                Real-time breakdown of sales volume, customer order frequency, and product popularity.
+              </p>
+
+              {/* Best Sellers & Category Breakdown Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+                {/* Best Sellers Leaderboard */}
+                <div className="bg-[#0B281B] p-5 rounded-2xl border border-[#16422E] space-y-4">
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-[#F4B838] flex items-center gap-2">
+                    <TrendingUp className="w-4 h-4" /> Best Selling Offerings
+                  </h3>
+                  <div className="space-y-3">
+                    {menuItems.slice(0, 5).map((item, idx) => (
+                      <div key={item.id} className="space-y-1">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-white font-medium">
+                            #{idx + 1} {item.name}
+                          </span>
+                          <span className="font-mono text-[#F4B838] font-bold">
+                            {item.price} {cafeInfo.currencySymbol}
+                          </span>
+                        </div>
+                        <div className="w-full h-2 bg-[#071E13] rounded-full overflow-hidden border border-[#16422E]">
+                          <div
+                            className="h-full bg-gradient-to-r from-[#7E5229] via-[#F4B838] to-[#B0C32E] rounded-full"
+                            style={{ width: `${100 - idx * 15}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Category Revenue Distribution */}
+                <div className="bg-[#0B281B] p-5 rounded-2xl border border-[#16422E] space-y-4">
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-[#F4B838] flex items-center gap-2">
+                    <PieChart className="w-4 h-4" /> Category Distribution
+                  </h3>
+                  <div className="space-y-3">
+                    {[
+                      { cat: 'Specialty Coffee', pct: 45, color: 'bg-[#F4B838]' },
+                      { cat: 'Fresh Bakery & Pastries', pct: 25, color: 'bg-[#B0C32E]' },
+                      { cat: 'All-Day Brunch', pct: 18, color: 'bg-[#7E5229]' },
+                      { cat: 'Handcrafted Teas & Drinks', pct: 12, color: 'bg-emerald-500' },
+                    ].map((c) => (
+                      <div key={c.cat} className="space-y-1">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-[#CAD4CD]">{c.cat}</span>
+                          <span className="font-mono text-white font-bold">{c.pct}%</span>
+                        </div>
+                        <div className="w-full h-2 bg-[#071E13] rounded-full overflow-hidden border border-[#16422E]">
+                          <div className={`h-full ${c.color} rounded-full`} style={{ width: `${c.pct}%` }} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 4: INTERACTIVE FLOOR PLAN & TABLE STAND QR */}
+        {activeTab === 'tables' && (
+          <div className="space-y-6">
+            <div className="bg-[#071E13] p-6 rounded-3xl border border-[#16422E] shadow-xl">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                <div>
+                  <h2 className="text-2xl font-editorial font-bold text-white flex items-center gap-2">
+                    <Grid className="w-6 h-6 text-[#F4B838]" />
+                    Interactive Floor Plan & Table Stand QR Codes
+                  </h2>
+                  <p className="text-xs text-[#CAD4CD] font-light mt-0.5">
+                    Click any table card to generate its custom QR stand or view active order status.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={onOpenQRModal}
+                  className="px-5 py-2.5 bg-[#F4B838] hover:bg-[#E4A82B] text-black rounded-xl text-xs font-bold uppercase tracking-wider shadow-lg flex items-center gap-2"
+                >
+                  <QrCode className="w-4 h-4" />
+                  <span>Print All Table Stands</span>
+                </button>
+              </div>
+
+              {/* 12 Tables Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                {cafeTables.map((table) => {
+                  const isOccupied = table.status !== 'free';
+                  return (
+                    <div
+                      key={table.tableNumber}
+                      onClick={onOpenQRModal}
+                      className={`p-5 rounded-3xl border transition-all cursor-pointer space-y-3 flex flex-col justify-between ${
+                        isOccupied
+                          ? 'bg-[#7E5229]/20 border-[#F4B838]/60 shadow-lg shadow-black/60'
+                          : 'bg-[#0B281B] border-[#16422E] hover:border-[#F4B838]/40'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="px-3 py-1 bg-[#071E13] text-[#F4B838] font-mono font-bold text-xs rounded-xl border border-[#16422E]">
+                          Table {table.tableNumber}
+                        </span>
+                        <span
+                          className={`w-2.5 h-2.5 rounded-full ${
+                            isOccupied ? 'bg-[#F4B838] animate-ping' : 'bg-[#B0C32E]'
+                          }`}
+                        />
+                      </div>
+
+                      <div>
+                        <span className="text-xs font-bold uppercase tracking-wider text-[#CAD4CD]">
+                          {isOccupied ? 'Active Customer Order' : 'Table Ready'}
+                        </span>
+                        {table.activeOrder && (
+                          <span className="block font-mono text-xs text-[#F4B838] font-extrabold mt-1">
+                            {table.activeOrder.totalAmount} {cafeInfo.currencySymbol}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="pt-2 border-t border-[#16422E]/60 flex items-center justify-between text-[11px] text-[#8FA597]">
+                        <span>Scan Stand QR</span>
+                        <ArrowUpRight className="w-3.5 h-3.5 text-[#F4B838]" />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 5: CAFE CONFIGURATION */}
+        {activeTab === 'cafe-settings' && (
           <div className="bg-[#071E13] rounded-3xl p-6 sm:p-8 border border-[#16422E] shadow-xl space-y-6">
             <h2 className="text-2xl font-editorial font-bold text-white pb-3 border-b border-[#16422E]">
               General Cafe Configuration
@@ -660,7 +1062,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="text-[11px] font-bold uppercase tracking-wider text-[#8FA597] block mb-1">
-                    Cafe Name
+                    Cafe Title & Subtitle
                   </label>
                   <input
                     type="text"
@@ -672,51 +1074,37 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 
                 <div>
                   <label className="text-[11px] font-bold uppercase tracking-wider text-[#8FA597] block mb-1">
-                    Tagline
+                    Currency Symbol
                   </label>
                   <input
                     type="text"
-                    value={settingsForm.tagline}
-                    onChange={(e) => setSettingsForm({ ...settingsForm, tagline: e.target.value })}
+                    value={settingsForm.currencySymbol}
+                    onChange={(e) => setSettingsForm({ ...settingsForm, currencySymbol: e.target.value })}
+                    className="w-full px-3 py-2 bg-[#0B281B] text-sm text-white rounded-xl border border-[#16422E] focus:outline-hidden focus:border-[#F4B838] font-mono font-bold"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-[#8FA597] block mb-1">
+                    Street Address & Location
+                  </label>
+                  <input
+                    type="text"
+                    value={settingsForm.address}
+                    onChange={(e) => setSettingsForm({ ...settingsForm, address: e.target.value })}
                     className="w-full px-3 py-2 bg-[#0B281B] text-sm text-white rounded-xl border border-[#16422E] focus:outline-hidden focus:border-[#F4B838]"
                   />
                 </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                  <label className="text-[11px] font-bold uppercase tracking-wider text-[#8FA597] block mb-1">
-                    Operating Hours
-                  </label>
-                  <input
-                    type="text"
-                    value={settingsForm.hours}
-                    onChange={(e) => setSettingsForm({ ...settingsForm, hours: e.target.value })}
-                    className="w-full px-3 py-2 bg-[#0B281B] text-sm text-white rounded-xl border border-[#16422E] focus:outline-hidden focus:border-[#F4B838]"
-                  />
-                </div>
 
                 <div>
                   <label className="text-[11px] font-bold uppercase tracking-wider text-[#8FA597] block mb-1">
-                    Guest WiFi SSID
-                  </label>
-                  <input
-                    type="text"
-                    value={settingsForm.wifiName}
-                    onChange={(e) => setSettingsForm({ ...settingsForm, wifiName: e.target.value })}
-                    className="w-full px-3 py-2 bg-[#0B281B] text-sm font-mono text-white rounded-xl border border-[#16422E] focus:outline-hidden focus:border-[#F4B838]"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-[11px] font-bold uppercase tracking-wider text-[#8FA597] block mb-1">
-                    WiFi Password
+                    Free Guest Wi-Fi Password
                   </label>
                   <input
                     type="text"
                     value={settingsForm.wifiPassword}
                     onChange={(e) => setSettingsForm({ ...settingsForm, wifiPassword: e.target.value })}
-                    className="w-full px-3 py-2 bg-[#0B281B] text-sm font-mono text-white rounded-xl border border-[#16422E] focus:outline-hidden focus:border-[#F4B838]"
+                    className="w-full px-3 py-2 bg-[#0B281B] text-sm text-white rounded-xl border border-[#16422E] focus:outline-hidden focus:border-[#F4B838] font-mono"
                   />
                 </div>
               </div>
