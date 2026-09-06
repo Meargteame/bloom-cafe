@@ -28,7 +28,6 @@ import {
   Menu,
   ChevronLeft,
   ChevronRight,
-  LogOut,
   Sparkles
 } from 'lucide-react';
 import { BloomLogo } from './BloomLogo';
@@ -252,7 +251,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     { id: 'orders', label: 'Live Orders KDS', icon: ChefHat, badge: activeOrdersCount ? `${activeOrdersCount}` : undefined },
     { id: 'menu', label: 'Menu Catalog', icon: UtensilsCrossed, badge: `${menuItems.length}` },
     { id: 'analytics', label: 'Sales Intelligence', icon: BarChart3 },
-    { id: 'tables', label: 'Floor Plan & QR', icon: Grid, badge: '12 Tables' },
+    { id: 'tables', label: 'Floor Plan & QR', icon: Grid, badge: '12 Stands' },
     { id: 'cafe-settings', label: 'Store Config', icon: Settings },
   ] as const;
 
@@ -275,26 +274,24 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       >
         {/* Sidebar Header & Brand Logo */}
         <div>
-          <div className="h-20 px-4 flex items-center justify-between border-b border-[#16422E]">
+          <div className="h-20 px-3 flex items-center justify-between border-b border-[#16422E]">
             {!isSidebarCollapsed ? (
-              <div className="flex items-center gap-3">
-                <BloomLogo size="sm" showSubtitle={false} />
-                <div className="flex flex-col">
-                  <span className="text-[10px] font-mono text-[#F4B838] uppercase font-bold tracking-widest">
-                    STAFF PORTAL
-                  </span>
-                </div>
+              <div className="flex items-center gap-2 overflow-hidden">
+                <BloomLogo size="sm" showSubtitle={false} showText={true} />
+                <span className="px-1.5 py-0.5 rounded bg-[#16422E] text-[#F4B838] text-[9px] font-mono font-bold uppercase tracking-wider border border-[#F4B838]/30 shrink-0">
+                  STAFF
+                </span>
               </div>
             ) : (
               <div className="mx-auto">
-                <BloomLogo size="sm" showSubtitle={false} />
+                <BloomLogo size="sm" showSubtitle={false} showText={false} />
               </div>
             )}
 
             <button
               type="button"
               onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-              className="hidden lg:flex p-1.5 rounded-lg bg-[#0B281B] text-[#8FA597] hover:text-white border border-[#16422E] hover:border-[#F4B838] transition-all"
+              className="hidden lg:flex p-1.5 rounded-lg bg-[#0B281B] text-[#8FA597] hover:text-white border border-[#16422E] hover:border-[#F4B838] transition-all shrink-0"
               title={isSidebarCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
             >
               {isSidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
@@ -314,24 +311,24 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                     setActiveTab(item.id);
                     setIsMobileSidebarOpen(false);
                   }}
-                  className={`w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-xs font-bold uppercase tracking-wider transition-all group ${
+                  className={`w-full flex items-center justify-between px-3 py-3 rounded-2xl text-xs font-bold uppercase tracking-wider transition-all group ${
                     isActive
                       ? 'bg-[#F4B838] text-black shadow-lg shadow-[#F4B838]/20'
                       : 'text-[#CAD4CD] hover:text-white hover:bg-[#0B281B] border border-transparent hover:border-[#16422E]'
                   }`}
                   title={item.label}
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2.5 min-w-0">
                     <IconComponent className={`w-5 h-5 shrink-0 ${isActive ? 'text-black' : 'text-[#F4B838] group-hover:scale-110 transition-transform'}`} />
-                    {!isSidebarCollapsed && <span>{item.label}</span>}
+                    {!isSidebarCollapsed && <span className="truncate text-[11px]">{item.label}</span>}
                   </div>
 
                   {!isSidebarCollapsed && item.badge && (
                     <span
-                      className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
+                      className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold shrink-0 ${
                         isActive
                           ? 'bg-black text-[#F4B838]'
-                          : 'bg-[#0B281B] text-[#B0C32E] border border-[#16422E]'
+                          : 'bg-[#0B281B] text-[#F4B838] border border-[#16422E]'
                       }`}
                     >
                       {item.badge}
@@ -346,34 +343,38 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         {/* Sidebar Footer Actions */}
         <div className="p-3 border-t border-[#16422E] space-y-2">
           {!isSidebarCollapsed ? (
-            <>
+            <div className="space-y-1.5">
               <button
                 type="button"
                 onClick={handleSimulateOrder}
-                className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-[#7E5229]/40 hover:bg-[#7E5229]/70 text-[#F4B838] border border-[#F4B838]/40 text-xs font-bold uppercase tracking-wider transition-all"
+                className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-[#7E5229]/40 hover:bg-[#7E5229]/70 text-[#F4B838] border border-[#F4B838]/40 text-xs font-bold uppercase tracking-wider transition-all"
               >
-                <Zap className="w-4 h-4 text-[#F4B838] animate-pulse" />
+                <Zap className="w-3.5 h-3.5 text-[#F4B838]" />
                 <span>Simulate Order</span>
               </button>
 
-              <button
-                type="button"
-                onClick={onSwitchToPublic}
-                className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-[#0B281B] hover:bg-[#123827] text-white border border-[#16422E] text-xs font-bold uppercase tracking-wider transition-all"
-              >
-                <Eye className="w-4 h-4 text-[#F4B838]" />
-                <span>Public Menu</span>
-              </button>
+              <div className="grid grid-cols-2 gap-1.5">
+                <button
+                  type="button"
+                  onClick={onSwitchToPublic}
+                  className="flex items-center justify-center gap-1 px-2 py-2 rounded-xl bg-[#0B281B] hover:bg-[#123827] text-white border border-[#16422E] text-[10px] font-bold uppercase transition-all"
+                  title="Public Menu"
+                >
+                  <Eye className="w-3.5 h-3.5 text-[#F4B838]" />
+                  <span>Public</span>
+                </button>
 
-              <button
-                type="button"
-                onClick={onOpenQRModal}
-                className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-[#0B281B] hover:bg-[#123827] text-[#CAD4CD] hover:text-white border border-[#16422E] text-xs font-bold uppercase tracking-wider transition-all"
-              >
-                <QrCode className="w-4 h-4 text-[#F4B838]" />
-                <span>Table Stands</span>
-              </button>
-            </>
+                <button
+                  type="button"
+                  onClick={onOpenQRModal}
+                  className="flex items-center justify-center gap-1 px-2 py-2 rounded-xl bg-[#0B281B] hover:bg-[#123827] text-[#CAD4CD] hover:text-white border border-[#16422E] text-[10px] font-bold uppercase transition-all"
+                  title="Table Stands"
+                >
+                  <QrCode className="w-3.5 h-3.5 text-[#F4B838]" />
+                  <span>Stands</span>
+                </button>
+              </div>
+            </div>
           ) : (
             <div className="space-y-2 flex flex-col items-center">
               <button
@@ -401,7 +402,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
         
         {/* TOP APP BAR FOR MAIN VIEWPORT */}
-        <header className="bg-[#071E13]/90 backdrop-blur-md sticky top-0 z-40 border-b border-[#16422E] px-4 sm:px-6 h-20 flex items-center justify-between">
+        <header className="bg-[#071E13]/90 backdrop-blur-md sticky top-0 z-40 border-b border-[#16422E] px-4 sm:px-8 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button
               type="button"
@@ -518,13 +519,13 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                   </p>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                   <button
                     type="button"
                     onClick={handleSimulateOrder}
-                    className="px-3.5 py-2 bg-[#7E5229] hover:bg-[#684220] text-[#F4B838] rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-md"
+                    className="px-4 py-2 bg-[#7E5229] hover:bg-[#684220] text-[#F4B838] border border-[#F4B838]/40 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 shadow-md shrink-0 transition-all"
                   >
-                    <Zap className="w-4 h-4 text-[#F4B838] animate-bounce" />
+                    <Zap className="w-4 h-4 text-[#F4B838]" />
                     <span>+ Test Order</span>
                   </button>
 
@@ -612,22 +613,23 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                           <div className="mt-3 space-y-2 max-h-48 overflow-y-auto pr-1">
                             {order.items.map((item, idx) => {
                               const menuItem = menuItems.find(
-                                (m) => m.id === item.menuItemId || String(m.id) === String(item.menuItemId)
+                                (m) => String(m.id) === String(item.menuItemId) || m.name.toLowerCase() === String(item.menuItemId).toLowerCase()
                               );
                               const itemTitle = menuItem ? menuItem.name : 'Specialty Cafe Item';
-                              const linePrice = (item.price || (menuItem ? menuItem.price : 0)) * (item.quantity || 1);
+                              const unitPrice = item.price || (menuItem ? menuItem.price : 0) || (order.totalAmount ? Math.round(order.totalAmount / (order.items.length || 1)) : 180);
+                              const linePrice = unitPrice * (item.quantity || 1);
 
                               return (
                                 <div key={idx} className="flex items-center justify-between text-xs py-1 border-b border-[#16422E]/40">
                                   <div className="flex items-center gap-2">
                                     <span className="w-5 h-5 rounded-md bg-[#0B281B] text-[#F4B838] font-mono font-bold flex items-center justify-center text-[10px] border border-[#16422E]">
-                                      {item.quantity}x
+                                      {item.quantity || 1}x
                                     </span>
                                     <span className="text-white font-medium">
                                       {itemTitle}
                                     </span>
                                   </div>
-                                  <span className="font-mono text-[#CAD4CD]">
+                                  <span className="font-mono text-[#F4B838] font-bold">
                                     {linePrice} {cafeInfo.currencySymbol}
                                   </span>
                                 </div>

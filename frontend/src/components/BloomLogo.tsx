@@ -4,12 +4,14 @@ interface BloomLogoProps {
   variant?: 'gold' | 'light' | 'dark';
   size?: 'sm' | 'md' | 'lg' | 'xl';
   showSubtitle?: boolean;
+  showText?: boolean;
 }
 
 export const BloomLogo: React.FC<BloomLogoProps> = ({
   variant = 'gold',
   size = 'md',
   showSubtitle = true,
+  showText = true,
 }) => {
   const iconSizes = {
     sm: 'w-7 h-7',
@@ -79,21 +81,23 @@ export const BloomLogo: React.FC<BloomLogoProps> = ({
       </div>
 
       {/* Wordmark */}
-      <div className="flex flex-col">
-        <div className="flex items-baseline gap-1.5 leading-none">
-          <span className={`font-editorial font-bold tracking-tight text-[#FAF8F5] ${titleSizes[size]}`}>
-            Bloom
-          </span>
-          <span className="font-editorial italic font-normal text-[#F4B838] ml-0.5">
-            Cafe
-          </span>
+      {showText && (
+        <div className="flex flex-col">
+          <div className="flex items-baseline gap-1.5 leading-none">
+            <span className={`font-editorial font-bold tracking-tight text-[#FAF8F5] ${titleSizes[size]}`}>
+              Bloom
+            </span>
+            <span className="font-editorial italic font-normal text-[#F4B838] ml-0.5">
+              Cafe
+            </span>
+          </div>
+          {showSubtitle && (
+            <span className="text-[9px] sm:text-[10px] tracking-[0.24em] uppercase font-bold text-[#CAD4CD] mt-1">
+              Taste The Moment
+            </span>
+          )}
         </div>
-        {showSubtitle && (
-          <span className="text-[9px] sm:text-[10px] tracking-[0.24em] uppercase font-bold text-[#CAD4CD] mt-1">
-            Taste The Moment
-          </span>
-        )}
-      </div>
+      )}
     </div>
   );
 };
