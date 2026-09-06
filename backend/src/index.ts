@@ -4,6 +4,7 @@ import menuRoutes from './routes/menu';
 import cafeInfoRoutes from './routes/cafeInfo';
 import orderRoutes from './routes/orders';
 import { db } from './data/store';
+import { connectMongoDB } from './config/db';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -37,6 +38,11 @@ app.post('/api/reset', (_req: Request, res: Response) => {
 });
 
 // Start server
-app.listen(Number(PORT), '0.0.0.0', () => {
-  console.log(`☕ Bloom Cafe Backend API running on port ${PORT}`);
-});
+async function startServer() {
+  await connectMongoDB();
+  app.listen(Number(PORT), '0.0.0.0', () => {
+    console.log(`☕ Bloom Cafe Backend API running on port ${PORT}`);
+  });
+}
+
+startServer();
