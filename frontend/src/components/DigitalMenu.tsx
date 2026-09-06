@@ -137,9 +137,6 @@ export const DigitalMenu: React.FC<DigitalMenuProps> = ({
                     : 'bg-[#0B281B] text-[#CAD4CD] border border-[#16422E] hover:text-white hover:border-[#F4B838]/50'
                 }`}
               >
-                <span className={isSelected ? 'text-black' : 'text-[#F4B838]'}>
-                  {cat.icon}
-                </span>
                 <span>{cat.label}</span>
               </button>
             );
@@ -198,6 +195,10 @@ export const DigitalMenu: React.FC<DigitalMenuProps> = ({
           {filteredItems.map((item) => {
             const inTrayCount = trayQuantities[item.id] || 0;
 
+            const nameMatch = item.name.match(/^(.*?)\s*\((.*?)\)$/);
+            const amharicName = nameMatch ? nameMatch[1].trim() : null;
+            const mainTitle = nameMatch ? nameMatch[2].trim() : item.name;
+
             return (
               <div
                 key={item.id}
@@ -244,14 +245,21 @@ export const DigitalMenu: React.FC<DigitalMenuProps> = ({
                   </div>
 
                   <div className="flex items-start justify-between gap-3 mb-2">
-                    <h3 
+                    <div 
                       onClick={() => onOpenItemDetail(item)}
-                      className="text-xl font-editorial font-bold text-[#FAF8F5] group-hover:text-[#F4B838] transition-colors cursor-pointer"
+                      className="cursor-pointer flex-1"
                     >
-                      {item.name}
-                    </h3>
+                      {amharicName && (
+                        <span className="text-xs text-[#8FA597] font-medium font-sans block mb-0.5">
+                          {amharicName}
+                        </span>
+                      )}
+                      <h3 className="text-xl font-editorial font-bold text-[#FAF8F5] group-hover:text-[#F4B838] transition-colors">
+                        {mainTitle}
+                      </h3>
+                    </div>
                     <span className="font-mono text-base font-bold text-[#F4B838] shrink-0">
-                      {cafeInfo.currencySymbol}{item.price.toFixed(2)}
+                      {item.price} {cafeInfo.currencySymbol}
                     </span>
                   </div>
 
