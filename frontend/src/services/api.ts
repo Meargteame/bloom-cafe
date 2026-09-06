@@ -1,8 +1,8 @@
 import { CafeMenuItem, CafeInfo, OrderItem } from '../types';
 import { initialMenuItems, initialCafeInfo } from '../data/bloomData';
 
-const MENU_STORAGE_KEY = 'bloom_cafe_menu_items_v2';
-const CAFE_INFO_STORAGE_KEY = 'bloom_cafe_info_v2';
+const MENU_STORAGE_KEY = 'bloom_cafe_menu_items_v4';
+const CAFE_INFO_STORAGE_KEY = 'bloom_cafe_info_v4';
 
 const API_BASE = '/api';
 
