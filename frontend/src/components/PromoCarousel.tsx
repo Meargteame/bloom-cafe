@@ -50,7 +50,7 @@ export const PromoCarousel: React.FC<PromoCarouselProps> = ({
           </div>
 
           <div className="pt-6 relative z-10 flex items-center justify-between">
-            <span className="font-mono text-lg font-bold text-[#F4B838]">45 ETB / Cup</span>
+            <span className="font-mono text-lg font-bold text-[#F4B838]">45 ብር / Cup</span>
             <button
               type="button"
               onClick={onScrollToMenu}
