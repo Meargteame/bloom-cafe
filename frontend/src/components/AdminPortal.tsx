@@ -83,15 +83,16 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   const [formData, setFormData] = useState<Partial<CafeMenuItem>>({
     name: '',
     category: 'coffee',
-    price: 5.0,
+    price: 250,
     description: '',
     isAvailable: true,
-    preparationTime: '4 mins',
+    preparationTime: '10 mins',
     dietary: [],
   });
 
   // Cafe Settings state
   const [settingsForm, setSettingsForm] = useState<CafeInfo>({ ...cafeInfo });
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
   const showToast = (msg: string) => {
     setSaveToast(msg);
@@ -103,10 +104,10 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       id: `custom-${Date.now()}`,
       name: '',
       category: 'coffee',
-      price: 5.0,
+      price: 250,
       description: '',
       isAvailable: true,
-      preparationTime: '4 mins',
+      preparationTime: '10 mins',
       dietary: [],
     });
     setIsAddingNew(true);
@@ -128,12 +129,16 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         id: `item-${Date.now()}`,
         name: formData.name.trim(),
         category: formData.category || 'coffee',
-        price: Number(formData.price) || 0,
-        description: formData.description || '',
-        isAvailable: formData.isAvailable ?? true,
-        preparationTime: formData.preparationTime || '4 mins',
+        price: Number(formData.price) || 250,
+        description: formData.description?.trim() || '',
+        isAvailable: formData.isAvailable !== undefined ? formData.isAvailable : true,
+        preparationTime: formData.preparationTime || '10 mins',
+        calories: formData.calories,
+        temperature: formData.temperature,
         dietary: formData.dietary || [],
+        image: formData.image || 'https://images.unsplash.com/photo-1541167760496-1628856ab772?auto=format&fit=crop&w=800&q=80',
       };
+
       onAddMenuItem(newItem);
       showToast(`Added "${newItem.name}" to menu`);
     } else if (editingItem) {
@@ -142,11 +147,15 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         name: formData.name.trim(),
         category: formData.category || editingItem.category,
         price: Number(formData.price) || editingItem.price,
-        description: formData.description || '',
-        isAvailable: formData.isAvailable ?? editingItem.isAvailable,
+        description: formData.description?.trim() || editingItem.description,
+        isAvailable: formData.isAvailable !== undefined ? formData.isAvailable : editingItem.isAvailable,
         preparationTime: formData.preparationTime || editingItem.preparationTime,
+        calories: formData.calories || editingItem.calories,
+        temperature: formData.temperature || editingItem.temperature,
         dietary: formData.dietary || editingItem.dietary,
+        image: formData.image || editingItem.image,
       };
+
       onUpdateMenuItem(updated);
       showToast(`Updated "${updated.name}"`);
     }
@@ -161,9 +170,23 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     showToast('Cafe settings updated successfully');
   };
 
-  const filteredItems = filterCategory === 'all' 
-    ? menuItems 
-    : menuItems.filter((i) => i.category === filterCategory);
+  // Calculations for KPI Analytics Bento
+  const totalSalesRevenue = orders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+  const activeOrdersCount = orders.filter((o) => o.status === 'received' || o.status === 'preparing').length;
+  const soldOutCount = menuItems.filter((i) => !i.isAvailable).length;
+
+  const filteredItems = menuItems.filter((item) => {
+    if (filterCategory !== 'all' && item.category !== filterCategory) return false;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      return (
+        item.name.toLowerCase().includes(q) ||
+        item.description.toLowerCase().includes(q) ||
+        item.category.toLowerCase().includes(q)
+      );
+    }
+    return true;
+  });
 
   const toggleDietaryTag = (tag: DietaryTag) => {
     const current = formData.dietary || [];
@@ -275,6 +298,49 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
           </div>
         </div>
 
+        {/* KPI Analytics Bento */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="bg-[#071E13] p-4 rounded-2xl border border-[#16422E] flex items-center justify-between">
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#8FA597]">Total Sales Volume</span>
+              <span className="block font-mono text-xl font-extrabold text-[#F4B838] mt-1">{totalSalesRevenue} {cafeInfo.currencySymbol}</span>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-[#0B281B] text-[#F4B838] border border-[#16422E] flex items-center justify-center">
+              <DollarSign className="w-5 h-5" />
+            </div>
+          </div>
+
+          <div className="bg-[#071E13] p-4 rounded-2xl border border-[#16422E] flex items-center justify-between">
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#8FA597]">Active Kitchen Queue</span>
+              <span className="block font-mono text-xl font-extrabold text-white mt-1">{activeOrdersCount} Orders</span>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-[#0B281B] text-[#B0C32E] border border-[#16422E] flex items-center justify-center">
+              <ChefHat className="w-5 h-5" />
+            </div>
+          </div>
+
+          <div className="bg-[#071E13] p-4 rounded-2xl border border-[#16422E] flex items-center justify-between">
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#8FA597]">Catalog Items</span>
+              <span className="block font-mono text-xl font-extrabold text-white mt-1">{menuItems.length} Offerings</span>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-[#0B281B] text-white border border-[#16422E] flex items-center justify-center">
+              <UtensilsCrossed className="w-5 h-5 text-[#F4B838]" />
+            </div>
+          </div>
+
+          <div className="bg-[#071E13] p-4 rounded-2xl border border-[#16422E] flex items-center justify-between">
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#8FA597]">Out of Stock</span>
+              <span className="block font-mono text-xl font-extrabold text-red-400 mt-1">{soldOutCount} Items</span>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-[#0B281B] text-red-400 border border-[#16422E] flex items-center justify-center">
+              <AlertCircle className="w-5 h-5" />
+            </div>
+          </div>
+        </div>
+
         {activeTab === 'menu' ? (
           /* MENU MANAGEMENT TAB */
           <div className="space-y-6">
@@ -298,10 +364,17 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
               </div>
 
               <div className="flex items-center gap-2 w-full sm:w-auto">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search item name..."
+                  className="px-3 py-2 bg-[#071E13] text-xs text-white rounded-xl border border-[#16422E] focus:outline-hidden focus:border-[#F4B838] placeholder-[#6E887B]"
+                />
                 <button
                   type="button"
                   onClick={handleStartAdd}
-                  className="w-full sm:w-auto px-4 py-2 rounded-xl bg-[#F4B838] hover:bg-[#E4A82B] text-black text-xs font-bold uppercase tracking-wider transition-all shadow-md flex items-center justify-center gap-2"
+                  className="px-4 py-2 rounded-xl bg-[#F4B838] hover:bg-[#E4A82B] text-black text-xs font-bold uppercase tracking-wider transition-all shadow-md flex items-center justify-center gap-2 shrink-0"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Add New Item</span>
@@ -490,23 +563,33 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#16422E]">
-                    {filteredItems.map((item) => (
-                      <tr key={item.id} className="hover:bg-[#0B281B]/50 transition-colors">
-                        <td className="py-4 px-4 sm:px-6">
-                          <div className="font-editorial font-bold text-base text-white">
-                            {item.name}
-                          </div>
-                          <div className="text-[11px] text-[#CAD4CD] max-w-xs truncate font-light">
-                            {item.description}
-                          </div>
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-[#8FA597]">
-                            {item.category}
-                          </span>
-                        </td>
+                    {filteredItems.map((item) => {
+                      const nameMatch = item.name.match(/^(.*?)\s*\((.*?)\)$/);
+                      const amharicName = nameMatch ? nameMatch[1].trim() : null;
+                      const mainTitle = nameMatch ? nameMatch[2].trim() : item.name;
 
-                        <td className="py-4 px-4 font-mono font-bold text-sm text-[#F4B838]">
-                          {cafeInfo.currencySymbol}{item.price.toFixed(2)}
-                        </td>
+                      return (
+                        <tr key={item.id} className="hover:bg-[#0B281B]/50 transition-colors">
+                          <td className="py-4 px-4 sm:px-6">
+                            {amharicName && (
+                              <span className="text-xs text-[#8FA597] font-medium font-sans block mb-0.5">
+                                {amharicName}
+                              </span>
+                            )}
+                            <div className="font-editorial font-bold text-base text-white">
+                              {mainTitle}
+                            </div>
+                            <div className="text-[11px] text-[#CAD4CD] max-w-xs truncate font-light">
+                              {item.description}
+                            </div>
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-[#8FA597]">
+                              {item.category}
+                            </span>
+                          </td>
+
+                          <td className="py-4 px-4 font-mono font-bold text-sm text-[#F4B838]">
+                            {item.price} {cafeInfo.currencySymbol}
+                          </td>
 
                         <td className="py-4 px-4">
                           <button
@@ -559,8 +642,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                           </div>
                         </td>
                       </tr>
-                    ))}
-                  </tbody>
+                    );
+                  })}
+                </tbody>
                 </table>
               </div>
             </div>
