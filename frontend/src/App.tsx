@@ -20,8 +20,8 @@ import { OrderTrayDrawer } from './components/OrderTrayDrawer';
 import { ItemDetailModal } from './components/ItemDetailModal';
 import { AdminPortal } from './components/AdminPortal';
 
-const MENU_STORAGE_KEY = 'bloom_cafe_menu_items_v2';
-const CAFE_INFO_STORAGE_KEY = 'bloom_cafe_info_v2';
+const MENU_STORAGE_KEY = 'bloom_cafe_menu_items_v4';
+const CAFE_INFO_STORAGE_KEY = 'bloom_cafe_info_v4';
 
 export default function App() {
   // State: Menu Items

@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CafeMenuItem, CafeInfo, CategoryType, DietaryTag } from '../types';
+import { api, BackendOrder } from '../services/api';
 import { 
   Plus, 
   Edit3, 
@@ -14,7 +15,9 @@ import {
   AlertCircle,
   ShieldCheck,
   Eye,
-  DollarSign
+  DollarSign,
+  ChefHat,
+  UtensilsCrossed
 } from 'lucide-react';
 import { BloomLogo } from './BloomLogo';
 
@@ -43,11 +46,38 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   onSwitchToPublic,
   onOpenQRModal,
 }) => {
-  const [activeTab, setActiveTab] = useState<'menu' | 'cafe-settings'>('menu');
+  const [activeTab, setActiveTab] = useState<'menu' | 'orders' | 'cafe-settings'>('menu');
   const [editingItem, setEditingItem] = useState<CafeMenuItem | null>(null);
   const [isAddingNew, setIsAddingNew] = useState<boolean>(false);
   const [filterCategory, setFilterCategory] = useState<CategoryType>('all');
   const [saveToast, setSaveToast] = useState<string>('');
+
+  // Live Orders state
+  const [orders, setOrders] = useState<BackendOrder[]>([]);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchOrders = () => {
+      api.getOrders().then((data) => {
+        if (isMounted) setOrders(data);
+      });
+    };
+    fetchOrders();
+    const interval = setInterval(fetchOrders, 5000);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, []);
+
+  const handleUpdateStatus = (orderId: string, status: BackendOrder['status']) => {
+    api.updateOrderStatus(orderId, status).then(() => {
+      setOrders((prev) =>
+        prev.map((o) => (o.id === orderId ? { ...o, status } : o))
+      );
+      showToast(`Order ${orderId.slice(-4)} set to ${status}`);
+    });
+  };
 
   // Form state for add / edit
   const [formData, setFormData] = useState<Partial<CafeMenuItem>>({
@@ -220,6 +250,18 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
             </button>
             <button
               type="button"
+              onClick={() => setActiveTab('orders')}
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${
+                activeTab === 'orders'
+                  ? 'bg-[#F4B838] text-black shadow-md'
+                  : 'text-[#CAD4CD] hover:text-white'
+              }`}
+            >
+              <ChefHat className="w-3.5 h-3.5" />
+              <span>Live Orders ({orders.length})</span>
+            </button>
+            <button
+              type="button"
               onClick={() => setActiveTab('cafe-settings')}
               className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${
                 activeTab === 'cafe-settings'
@@ -228,13 +270,14 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
               }`}
             >
               <Settings className="w-3.5 h-3.5" />
-              <span>Cafe Info & WiFi</span>
+              <span>Cafe Info</span>
             </button>
           </div>
         </div>
 
         {activeTab === 'menu' ? (
-          <div className="space-y-6">
+          /* MENU MANAGEMENT TAB */
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             {/* Quick Action & Filter Row */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div className="flex flex-wrap items-center gap-2">

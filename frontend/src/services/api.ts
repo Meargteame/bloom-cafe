@@ -148,6 +148,23 @@ export const api = {
     return [];
   },
 
+  updateOrderStatus: async (
+    orderId: string,
+    status: BackendOrder['status']
+  ): Promise<BackendOrder | null> => {
+    try {
+      const res = await fetch(`${API_BASE}/orders/${orderId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      });
+      if (res.ok) return await res.json();
+    } catch (e) {
+      console.warn('Backend API unreachable', e);
+    }
+    return null;
+  },
+
   resetDefaults: async (): Promise<boolean> => {
     try {
       const res = await fetch(`${API_BASE}/reset`, { method: 'POST' });
