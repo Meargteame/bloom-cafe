@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { CafeMenuItem, CafeInfo, OrderItem, TimeSlot } from './types';
 import { initialMenuItems, initialCafeInfo, initialTimeSlots } from './data/bloomData';
+import { api } from './services/api';
 
 // Components in the Permanent UI Design System
 import { Navbar } from './components/Navbar';
@@ -23,7 +24,7 @@ const MENU_STORAGE_KEY = 'bloom_cafe_menu_items_v2';
 const CAFE_INFO_STORAGE_KEY = 'bloom_cafe_info_v2';
 
 export default function App() {
-  // State: Menu Items (persisted locally)
+  // State: Menu Items
   const [menuItems, setMenuItems] = useState<CafeMenuItem[]>(() => {
     try {
       const saved = localStorage.getItem(MENU_STORAGE_KEY);
@@ -34,7 +35,7 @@ export default function App() {
     return initialMenuItems;
   });
 
-  // State: Cafe Info (persisted locally)
+  // State: Cafe Info
   const [cafeInfo, setCafeInfo] = useState<CafeInfo>(() => {
     try {
       const saved = localStorage.getItem(CAFE_INFO_STORAGE_KEY);
@@ -56,6 +57,24 @@ export default function App() {
   const [isQRModalOpen, setIsQRModalOpen] = useState<boolean>(false);
   const [isOrderTrayOpen, setIsOrderTrayOpen] = useState<boolean>(false);
   const [selectedDetailItem, setSelectedDetailItem] = useState<CafeMenuItem | null>(null);
+
+  // Fetch menu and info from API on mount
+  useEffect(() => {
+    let isMounted = true;
+    api.getMenuItems().then((items) => {
+      if (isMounted && items && items.length > 0) {
+        setMenuItems(items);
+      }
+    });
+    api.getCafeInfo().then((info) => {
+      if (isMounted && info) {
+        setCafeInfo(info);
+      }
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Sync menu items to localStorage
   useEffect(() => {
@@ -144,6 +163,7 @@ export default function App() {
 
   // Handlers for Admin Management
   const handleToggleAvailability = (id: string) => {
+    api.toggleAvailability(id);
     setMenuItems((prev) =>
       prev.map((item) =>
         item.id === id ? { ...item, isAvailable: !item.isAvailable } : item
@@ -152,26 +172,31 @@ export default function App() {
   };
 
   const handleUpdateMenuItem = (updatedItem: CafeMenuItem) => {
+    api.updateMenuItem(updatedItem);
     setMenuItems((prev) =>
       prev.map((item) => (item.id === updatedItem.id ? updatedItem : item))
     );
   };
 
   const handleAddMenuItem = (newItem: CafeMenuItem) => {
+    api.addMenuItem(newItem);
     setMenuItems((prev) => [newItem, ...prev]);
   };
 
   const handleDeleteMenuItem = (id: string) => {
+    api.deleteMenuItem(id);
     setMenuItems((prev) => prev.filter((item) => item.id !== id));
     setOrderItems((prev) => prev.filter((item) => item.item.id !== id));
   };
 
   const handleUpdateCafeInfo = (info: CafeInfo) => {
+    api.updateCafeInfo(info);
     setCafeInfo(info);
   };
 
   const handleResetDefaults = () => {
     if (confirm('Reset Bloom Cafe menu and details to default values?')) {
+      api.resetDefaults();
       setMenuItems(initialMenuItems);
       setCafeInfo(initialCafeInfo);
       localStorage.removeItem(MENU_STORAGE_KEY);

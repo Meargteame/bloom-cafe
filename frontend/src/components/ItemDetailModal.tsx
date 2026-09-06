@@ -32,14 +32,34 @@ export const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
         className="relative w-full max-w-lg bg-[#0B281B] text-white rounded-3xl shadow-2xl border border-[#16422E] overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Optional Image Header */}
+        {item.image && (
+          <div className="relative h-56 w-full overflow-hidden">
+            <img 
+              src={item.image} 
+              alt={item.name} 
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#071E13] via-transparent to-black/40" />
+            <button
+              onClick={onClose}
+              className="absolute top-4 right-4 w-9 h-9 rounded-full bg-black/60 text-white hover:bg-black flex items-center justify-center transition-colors border border-white/20 backdrop-blur-xs"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        )}
+
         {/* Top Header Banner */}
         <div className="bg-[#071E13] p-6 relative border-b border-[#16422E]">
-          <button
-            onClick={onClose}
-            className="absolute top-5 right-5 w-8 h-8 rounded-full bg-[#0B281B] text-[#8FA597] hover:text-white flex items-center justify-center transition-colors border border-[#16422E]"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          {!item.image && (
+            <button
+              onClick={onClose}
+              className="absolute top-5 right-5 w-8 h-8 rounded-full bg-[#0B281B] text-[#8FA597] hover:text-white flex items-center justify-center transition-colors border border-[#16422E]"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
 
           <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#0B281B] text-[#F4B838] text-[10px] font-bold uppercase tracking-[0.2em] border border-[#16422E] mb-3">
             <Sparkles className="w-3 h-3" />
@@ -124,11 +144,11 @@ export const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
                     key={tag}
                     className="px-3 py-1 rounded-lg bg-[#071E13] text-[#FAF8F5] border border-[#16422E] text-xs font-medium"
                   >
-                    {tag === 'vegan' && '🌱 100% Vegan Plant-Based'}
-                    {tag === 'vegetarian' && '🌿 Vegetarian Friendly'}
-                    {tag === 'gluten-free' && '🌾 Gluten-Free Recipe'}
-                    {tag === 'popular' && '★ Guest Favorite'}
-                    {tag === 'chef-choice' && '✨ Roaster Master Pick'}
+                    {tag === 'vegan' && '100% Vegan Plant-Based'}
+                    {tag === 'vegetarian' && 'Vegetarian Friendly'}
+                    {tag === 'gluten-free' && 'Gluten-Free Recipe'}
+                    {tag === 'popular' && 'Guest Favorite'}
+                    {tag === 'chef-choice' && 'Roaster Master Pick'}
                   </span>
                 ))}
               </div>

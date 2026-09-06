@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { OrderItem, CafeInfo } from '../types';
 import { X, Plus, Minus, Trash2, Coffee, Check, MessageSquare, ArrowRight } from 'lucide-react';
 import { BloomLogo } from './BloomLogo';
+import { api } from '../services/api';
 
 interface OrderTrayDrawerProps {
   isOpen: boolean;
@@ -39,6 +40,7 @@ export const OrderTrayDrawer: React.FC<OrderTrayDrawerProps> = ({
   const total = subtotal + estimatedTax;
 
   const handlePlaceOrder = () => {
+    api.submitOrder(tableNumber || '1', items, total);
     setOrderSent(true);
   };
 

@@ -35,23 +35,23 @@ export const DigitalMenu: React.FC<DigitalMenuProps> = ({
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedDietary, setSelectedDietary] = useState<DietaryTag | 'all'>('all');
 
-  const categories: { id: CategoryType; label: string; icon: React.ReactNode }[] = [
-    { id: 'all', label: 'All Offerings', icon: <Sparkles className="w-3.5 h-3.5" /> },
-    { id: 'coffee', label: 'Specialty Coffee', icon: <Coffee className="w-3.5 h-3.5" /> },
-    { id: 'tea', label: 'Teas & Coolers', icon: <CupSoda className="w-3.5 h-3.5" /> },
-    { id: 'bakery', label: 'Artisan Bakery', icon: <Croissant className="w-3.5 h-3.5" /> },
-    { id: 'brunch', label: 'All-Day Brunch', icon: <Utensils className="w-3.5 h-3.5" /> },
-    { id: 'sandwiches', label: 'Toasties & Bagels', icon: <Sandwich className="w-3.5 h-3.5" /> },
-    { id: 'desserts', label: 'Sweet Treats', icon: <Cake className="w-3.5 h-3.5" /> },
+  const categories: { id: CategoryType; label: string }[] = [
+    { id: 'all', label: 'All Offerings' },
+    { id: 'coffee', label: 'Specialty Coffee' },
+    { id: 'tea', label: 'Teas & Coolers' },
+    { id: 'bakery', label: 'Artisan Bakery' },
+    { id: 'brunch', label: 'All-Day Brunch' },
+    { id: 'sandwiches', label: 'Toasties & Bagels' },
+    { id: 'desserts', label: 'Sweet Treats' },
   ];
 
   const dietaryFilters: { id: DietaryTag | 'all'; label: string }[] = [
     { id: 'all', label: 'All Diets' },
-    { id: 'popular', label: '★ Cafe Favorites' },
-    { id: 'vegan', label: '🌱 Vegan' },
-    { id: 'vegetarian', label: '🌿 Vegetarian' },
-    { id: 'gluten-free', label: '🌾 Gluten-Free' },
-    { id: 'chef-choice', label: '✨ Roaster Choice' },
+    { id: 'popular', label: 'Cafe Favorites' },
+    { id: 'vegan', label: 'Vegan' },
+    { id: 'vegetarian', label: 'Vegetarian' },
+    { id: 'gluten-free', label: 'Gluten-Free' },
+    { id: 'chef-choice', label: 'Roaster Choice' },
   ];
 
   const filteredItems = useMemo(() => {
@@ -93,83 +93,81 @@ export const DigitalMenu: React.FC<DigitalMenuProps> = ({
         </p>
       </div>
 
-      {/* Sticky Filter Bar in Obsidian Dark #071E13 */}
-      <div className="sticky top-20 z-30 bg-[#071E13]/95 backdrop-blur-md py-4 -mx-4 px-4 sm:-mx-6 sm:px-6 mb-8 border-y border-[#16422E] shadow-xl">
-        <div className="max-w-7xl mx-auto space-y-3">
-          {/* Search bar & count */}
-          <div className="flex items-center gap-3">
-            <div className="relative flex-1">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8FA597]" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search coffee, bakery, brunch, ingredients..."
-                className="w-full pl-10 pr-9 py-2.5 bg-[#0B281B] text-sm text-[#FAF8F5] rounded-xl border border-[#16422E] focus:outline-hidden focus:border-[#F4B838] placeholder-[#6E887B]"
-              />
-              {searchQuery && (
-                <button
-                  type="button"
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8FA597] hover:text-white"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              )}
-            </div>
-
-            <div className="hidden sm:flex items-center px-3.5 py-2.5 bg-[#0B281B] border border-[#16422E] rounded-xl text-xs font-mono font-bold text-[#F4B838] whitespace-nowrap">
-              {filteredItems.length} {filteredItems.length === 1 ? 'OFFERING' : 'OFFERINGS'}
-            </div>
+      {/* Modern Full-Width Filter Hub in Obsidian Dark #071E13 */}
+      <div className="w-full bg-[#071E13] rounded-3xl border border-[#16422E] p-5 sm:p-6 mb-10 shadow-2xl space-y-4">
+        {/* Search bar & offering counter */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8FA597]" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search woodfired pizza, burgers, macchiato, shiro, mojitos..."
+              className="w-full pl-11 pr-10 py-3 bg-[#0B281B] text-sm text-[#FAF8F5] rounded-2xl border border-[#16422E] focus:outline-hidden focus:border-[#F4B838] placeholder-[#6E887B] transition-colors"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#8FA597] hover:text-white"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
           </div>
 
-          {/* Categories Horizontal */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
-            {categories.map((cat) => {
-              const isSelected = selectedCategory === cat.id;
-              return (
-                <button
-                  key={cat.id}
-                  type="button"
-                  onClick={() => setSelectedCategory(cat.id)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-all select-none ${
-                    isSelected
-                      ? 'bg-[#F4B838] text-black shadow-md'
-                      : 'bg-[#0B281B] text-[#CAD4CD] border border-[#16422E] hover:text-white hover:border-[#F4B838]/50'
-                  }`}
-                >
-                  <span className={isSelected ? 'text-black' : 'text-[#F4B838]'}>
-                    {cat.icon}
-                  </span>
-                  <span>{cat.label}</span>
-                </button>
-              );
-            })}
+          <div className="flex items-center justify-between sm:justify-center px-4 py-3 bg-[#0B281B] border border-[#16422E] rounded-2xl text-xs font-mono font-bold text-[#F4B838] shrink-0">
+            <span>{filteredItems.length} {filteredItems.length === 1 ? 'OFFERING' : 'OFFERINGS'}</span>
           </div>
+        </div>
 
-          {/* Dietary Filters */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 no-scrollbar text-xs">
-            <span className="text-[10px] font-bold text-[#8FA597] uppercase tracking-wider mr-1 shrink-0">
-              Dietary:
-            </span>
-            {dietaryFilters.map((df) => {
-              const isSelected = selectedDietary === df.id;
-              return (
-                <button
-                  key={df.id}
-                  type="button"
-                  onClick={() => setSelectedDietary(df.id)}
-                  className={`px-3 py-1 rounded-lg transition-colors whitespace-nowrap text-[11px] font-medium ${
-                    isSelected
-                      ? 'bg-[#B0C32E] text-[#071E13] font-bold'
-                      : 'bg-[#0B281B] text-[#A8BAAE] border border-[#16422E] hover:bg-[#123827]'
-                  }`}
-                >
-                  {df.label}
-                </button>
-              );
-            })}
-          </div>
+        {/* Categories Horizontal Pills */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar pt-1">
+          {categories.map((cat) => {
+            const isSelected = selectedCategory === cat.id;
+            return (
+              <button
+                key={cat.id}
+                type="button"
+                onClick={() => setSelectedCategory(cat.id)}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-all select-none ${
+                  isSelected
+                    ? 'bg-[#F4B838] text-black shadow-lg scale-[1.02]'
+                    : 'bg-[#0B281B] text-[#CAD4CD] border border-[#16422E] hover:text-white hover:border-[#F4B838]/50'
+                }`}
+              >
+                <span className={isSelected ? 'text-black' : 'text-[#F4B838]'}>
+                  {cat.icon}
+                </span>
+                <span>{cat.label}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Dietary Filters Chips */}
+        <div className="flex items-center gap-2 overflow-x-auto pt-2 border-t border-[#16422E]/80 no-scrollbar text-xs">
+          <span className="text-[10px] font-bold text-[#8FA597] uppercase tracking-wider mr-1 shrink-0">
+            Dietary:
+          </span>
+          {dietaryFilters.map((df) => {
+            const isSelected = selectedDietary === df.id;
+            return (
+              <button
+                key={df.id}
+                type="button"
+                onClick={() => setSelectedDietary(df.id)}
+                className={`px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap text-[11px] font-semibold ${
+                  isSelected
+                    ? 'bg-[#B0C32E] text-[#071E13] font-bold shadow-xs'
+                    : 'bg-[#0B281B] text-[#A8BAAE] border border-[#16422E] hover:bg-[#123827] hover:text-white'
+                }`}
+              >
+                {df.label}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -209,6 +207,21 @@ export const DigitalMenu: React.FC<DigitalMenuProps> = ({
                     : 'border-[#16422E] hover:border-[#F4B838]/60'
                 }`}
               >
+                {/* Optional Item Image Header */}
+                {item.image && (
+                  <div 
+                    onClick={() => onOpenItemDetail(item)}
+                    className="relative h-44 overflow-hidden cursor-pointer"
+                  >
+                    <img 
+                      src={item.image} 
+                      alt={item.name}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#071E13] via-transparent to-black/30" />
+                  </div>
+                )}
+
                 {/* Body */}
                 <div className="p-6 flex-1 flex flex-col">
                   <div className="flex items-center justify-between gap-2 mb-3">
@@ -254,13 +267,13 @@ export const DigitalMenu: React.FC<DigitalMenuProps> = ({
                     {item.dietary?.map((tag) => (
                       <span
                         key={tag}
-                        className="px-2 py-0.5 rounded bg-[#0B281B] text-[#A8BAAE] border border-[#16422E]"
+                        className="px-2 py-0.5 rounded bg-[#0B281B] text-[#A8BAAE] border border-[#16422E] font-medium"
                       >
-                        {tag === 'vegan' && '🌱 Vegan'}
-                        {tag === 'vegetarian' && '🌿 Veg'}
-                        {tag === 'gluten-free' && '🌾 Gluten-Free'}
-                        {tag === 'popular' && '★ Popular'}
-                        {tag === 'chef-choice' && '✨ Chef Pick'}
+                        {tag === 'vegan' && 'Vegan'}
+                        {tag === 'vegetarian' && 'Vegetarian'}
+                        {tag === 'gluten-free' && 'Gluten-Free'}
+                        {tag === 'popular' && 'Popular'}
+                        {tag === 'chef-choice' && 'Chef Pick'}
                       </span>
                     ))}
 

@@ -30,8 +30,8 @@ export const HourTableSection: React.FC<HourTableSectionProps> = ({
           </p>
         </div>
 
-        {/* Time Slots Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        {/* Time Slots Grid - Exactly 4 Balanced Columns */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {timeSlots.map((slot) => {
             return (
               <div
@@ -39,8 +39,8 @@ export const HourTableSection: React.FC<HourTableSectionProps> = ({
                 onClick={onScrollToMenu}
                 className={`group relative rounded-2xl p-6 transition-all duration-300 flex flex-col justify-between cursor-pointer border ${
                   slot.isActiveNow
-                    ? 'bg-[#071E13] text-white border-[#F4B838] shadow-xl ring-2 ring-[#F4B838]/30'
-                    : 'bg-[#0B281B] text-white border-[#16422E] hover:border-[#F4B838]/60 hover:shadow-lg'
+                    ? 'bg-[#071E13] text-white border-[#F4B838] shadow-xl ring-2 ring-[#F4B838]/30 scale-[1.02]'
+                    : 'bg-[#071E13] text-white border-[#16422E] hover:border-[#F4B838]/60 hover:shadow-lg'
                 }`}
               >
                 <div>
@@ -50,7 +50,7 @@ export const HourTableSection: React.FC<HourTableSectionProps> = ({
                       {slot.timeRange}
                     </span>
                     {slot.isActiveNow && (
-                      <span className="px-2 py-0.5 rounded-full bg-[#B0C32E] text-[#071E13] text-[9px] font-black uppercase tracking-wider animate-pulse">
+                      <span className="px-2.5 py-0.5 rounded-full bg-[#B0C32E] text-[#071E13] text-[9px] font-black uppercase tracking-wider animate-pulse">
                         ● NOW
                       </span>
                     )}
@@ -62,16 +62,16 @@ export const HourTableSection: React.FC<HourTableSectionProps> = ({
                   </h3>
 
                   {/* Description */}
-                  <p className="text-xs text-[#CAD4CD] leading-relaxed mb-4 line-clamp-3">
+                  <p className="text-xs text-[#CAD4CD] leading-relaxed mb-4 line-clamp-3 font-light">
                     {slot.description}
                   </p>
                 </div>
 
                 {/* Highlights List */}
-                <div className="pt-3 border-t border-[#16422E] space-y-1 text-[11px] text-[#A8BAAE]">
+                <div className="pt-3 border-t border-[#16422E] space-y-1.5 text-[11px] text-[#A8BAAE]">
                   {slot.highlights.map((item, idx) => (
                     <div key={idx} className="flex items-center gap-1.5">
-                      <span className="w-1 h-1 rounded-full bg-[#F4B838]" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#F4B838]" />
                       <span>{item}</span>
                     </div>
                   ))}
