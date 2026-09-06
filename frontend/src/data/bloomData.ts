@@ -508,7 +508,7 @@ export const initialMenuItems: CafeMenuItem[] = [
   },
   {
     id: 'bk-2',
-    name: 'ስፔሻል ጨጨብsa (Special Chechebsa with Honey & Egg)',
+    name: 'ስፔሻል ጨጨብሳ (Special Chechebsa with Honey & Egg)',
     category: 'brunch',
     price: 245,
     description: 'Chechebsa cooked in spiced kibbeh, topped with organic honey & scrambled egg.',
@@ -585,11 +585,11 @@ export const initialMenuItems: CafeMenuItem[] = [
   },
 
   // =========================================================================
-  // 6. MOGETO & ICED BEVERAGES (ሞሂቶ እና መጠጦች)
+  // 6. MOJITO & ICED BEVERAGES (ሞሂቶ እና መጠጦች)
   // =========================================================================
   {
     id: 'mg-1',
-    name: 'special mogeto (Special Mojito)',
+    name: 'ስፔሻል ሞሂቶ (Special Mojito)',
     category: 'tea',
     price: 185,
     description: 'Muddled fresh mint, lime juice, brown sugar, passion fruit elixir & sparkling soda.',
@@ -601,7 +601,7 @@ export const initialMenuItems: CafeMenuItem[] = [
   },
   {
     id: 'mg-2',
-    name: 'Avatar Mock tea (አቫታር ሞክቴል)',
+    name: 'አቫታር ሞክቴል (Avatar Mocktail)',
     category: 'tea',
     price: 155,
     description: 'Layered blue curaçao fruit syrup, lime, sprite, fresh mint & pomegranate seeds.',
@@ -613,7 +613,7 @@ export const initialMenuItems: CafeMenuItem[] = [
   },
   {
     id: 'mg-3',
-    name: 'king mogeto (King Mojito)',
+    name: 'ኪንግ ሞሂቶ (King Mojito)',
     category: 'tea',
     price: 165,
     description: 'Royal mint lime mojito with added ginger spice & sparkling mineral soda.',
@@ -625,7 +625,7 @@ export const initialMenuItems: CafeMenuItem[] = [
   },
   {
     id: 'mg-4',
-    name: 'sunset mogeto (Sunset Mojito)',
+    name: 'ሰንሴት ሞሂቶ (Sunset Mojito)',
     category: 'tea',
     price: 130,
     description: 'Layered strawberry puree, fresh orange citrus, mint & sparkling crushed ice.',
@@ -637,7 +637,7 @@ export const initialMenuItems: CafeMenuItem[] = [
   },
   {
     id: 'mg-5',
-    name: 'caramel ice coffe (Caramel Iced Coffee)',
+    name: 'ካራሜል አይስ ቡና (Caramel Iced Coffee)',
     category: 'coffee',
     price: 110,
     description: 'Cold espresso coffee shaken over ice with caramel syrup & cold milk foam.',
@@ -649,7 +649,7 @@ export const initialMenuItems: CafeMenuItem[] = [
   },
   {
     id: 'mg-6',
-    name: 'ice farpuheno (Iced Frappuccino)',
+    name: 'አይስ ፍራፑቺኖ (Iced Frappuccino)',
     category: 'coffee',
     price: 130,
     description: 'Blended icy espresso coffee with chocolate fudge syrup & whipped sweet cream.',
