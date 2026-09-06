@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: bloom-cafe-backend
+    env: node
+    rootDir: backend
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: PORT
+        value: 10000

@@ -37,6 +37,6 @@ app.post('/api/reset', (_req: Request, res: Response) => {
 });
 
 // Start server
-app.listen(PORT, () => {
-  console.log(`☕ Bloom Cafe Backend API running at http://localhost:${PORT}`);
+app.listen(Number(PORT), '0.0.0.0', () => {
+  console.log(`☕ Bloom Cafe Backend API running on port ${PORT}`);
 });
