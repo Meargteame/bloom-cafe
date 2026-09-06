@@ -144,101 +144,112 @@ export const OrderTrayDrawer: React.FC<OrderTrayDrawerProps> = ({
               </div>
             </div>
 
-            {/* Item List */}
-            <div className="flex-1 overflow-y-auto p-5 space-y-3">
-              {items.length === 0 ? (
-                <div className="py-16 text-center space-y-3">
-                  <div className="w-12 h-12 rounded-full bg-[#071E13] text-[#8FA597] border border-[#16422E] flex items-center justify-center mx-auto">
-                    <Coffee className="w-6 h-6 text-[#F4B838]" />
-                  </div>
-                  <h4 className="text-lg font-editorial font-bold text-white">Your tray is empty</h4>
-                  <p className="text-xs text-[#CAD4CD] max-w-xs mx-auto">
-                    Browse the digital menu and tap "+ Add" to assemble your table order.
-                  </p>
-                </div>
-              ) : (
-                items.map(({ item, quantity }) => (
-                  <div 
-                    key={item.id}
-                    className="bg-[#071E13] p-4 rounded-xl border border-[#16422E] flex items-center justify-between gap-3 shadow-xs"
-                  >
-                    <div className="flex-1 min-w-0">
-                      <h4 className="text-sm font-editorial font-bold text-white truncate">
-                        {item.name}
-                      </h4>
-                      <span className="font-mono text-xs text-[#F4B838]">
-                        {cafeInfo.currencySymbol}{item.price.toFixed(2)} each
-                      </span>
+              {/* Item List */}
+              <div className="flex-1 overflow-y-auto p-5 space-y-3">
+                {items.length === 0 ? (
+                  <div className="py-16 text-center space-y-3">
+                    <div className="w-12 h-12 rounded-full bg-[#071E13] text-[#8FA597] border border-[#16422E] flex items-center justify-center mx-auto">
+                      <Coffee className="w-6 h-6 text-[#F4B838]" />
                     </div>
+                    <h4 className="text-lg font-editorial font-bold text-white">Your tray is empty</h4>
+                    <p className="text-xs text-[#CAD4CD] max-w-xs mx-auto">
+                      Browse the digital menu and tap "+ Add" to assemble your table order.
+                    </p>
+                  </div>
+                ) : (
+                  items.map(({ item, quantity }) => {
+                    const nameMatch = item.name.match(/^(.*?)\s*\((.*?)\)$/);
+                    const amharicName = nameMatch ? nameMatch[1].trim() : null;
+                    const mainTitle = nameMatch ? nameMatch[2].trim() : item.name;
 
-                    <div className="flex items-center gap-2">
-                      <div className="flex items-center bg-[#0B281B] rounded-lg border border-[#16422E] p-0.5">
-                        <button
-                          type="button"
-                          onClick={() => onUpdateQuantity(item.id, -1)}
-                          className="w-6 h-6 flex items-center justify-center text-[#8FA597] hover:text-white rounded"
-                        >
-                          <Minus className="w-3 h-3" />
-                        </button>
-                        <span className="w-6 text-center font-mono text-xs font-bold text-white">
-                          {quantity}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => onUpdateQuantity(item.id, 1)}
-                          className="w-6 h-6 flex items-center justify-center text-[#8FA597] hover:text-white rounded"
-                        >
-                          <Plus className="w-3 h-3" />
-                        </button>
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() => onRemoveItem(item.id)}
-                        className="w-7 h-7 flex items-center justify-center text-[#8FA597] hover:text-red-400 rounded-lg hover:bg-[#16422E] transition-colors"
-                        title="Remove item"
+                    return (
+                      <div 
+                        key={item.id}
+                        className="bg-[#071E13] p-4 rounded-xl border border-[#16422E] flex items-center justify-between gap-3 shadow-xs"
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                        <div className="flex-1 min-w-0">
+                          {amharicName && (
+                            <span className="text-[10px] text-[#8FA597] font-sans block truncate">
+                              {amharicName}
+                            </span>
+                          )}
+                          <h4 className="text-sm font-editorial font-bold text-white truncate">
+                            {mainTitle}
+                          </h4>
+                          <span className="font-mono text-xs text-[#F4B838]">
+                            {item.price} {cafeInfo.currencySymbol} each
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <div className="flex items-center bg-[#0B281B] rounded-lg border border-[#16422E] p-0.5">
+                            <button
+                              type="button"
+                              onClick={() => onUpdateQuantity(item.id, -1)}
+                              className="w-6 h-6 flex items-center justify-center text-[#8FA597] hover:text-white rounded"
+                            >
+                              <Minus className="w-3 h-3" />
+                            </button>
+                            <span className="w-6 text-center font-mono text-xs font-bold text-white">
+                              {quantity}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => onUpdateQuantity(item.id, 1)}
+                              className="w-6 h-6 flex items-center justify-center text-[#8FA597] hover:text-white rounded"
+                            >
+                              <Plus className="w-3 h-3" />
+                            </button>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => onRemoveItem(item.id)}
+                            className="w-7 h-7 flex items-center justify-center text-[#8FA597] hover:text-red-400 rounded-lg hover:bg-[#16422E] transition-colors"
+                            title="Remove item"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+
+                {/* Special Instructions */}
+                {items.length > 0 && (
+                  <div className="pt-2">
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-[#8FA597] block mb-1">
+                      Barista Instructions (Optional):
+                    </label>
+                    <input
+                      type="text"
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      placeholder="e.g. Oat milk, extra hot, no cinnamon..."
+                      className="w-full px-3 py-2 bg-[#071E13] text-xs text-white rounded-xl border border-[#16422E] focus:outline-hidden focus:border-[#F4B838] placeholder-[#6E887B]"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Bottom Totals & Place Order */}
+              {items.length > 0 && (
+                <div className="p-5 bg-[#071E13] border-t border-[#16422E] space-y-3">
+                  <div className="space-y-1.5 text-xs text-[#CAD4CD]">
+                    <div className="flex justify-between">
+                      <span>Subtotal:</span>
+                      <span className="font-mono text-white">{subtotal} {cafeInfo.currencySymbol}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Est. Tax (8%):</span>
+                      <span className="font-mono text-white">{Math.round(estimatedTax)} {cafeInfo.currencySymbol}</span>
+                    </div>
+                    <div className="flex justify-between text-base font-bold text-white pt-2 border-t border-[#16422E]">
+                      <span>Total:</span>
+                      <span className="font-mono text-[#F4B838]">{Math.round(total)} {cafeInfo.currencySymbol}</span>
                     </div>
                   </div>
-                ))
-              )}
-
-              {/* Special Instructions */}
-              {items.length > 0 && (
-                <div className="pt-2">
-                  <label className="text-[11px] font-bold uppercase tracking-wider text-[#8FA597] block mb-1">
-                    Barista Instructions (Optional):
-                  </label>
-                  <input
-                    type="text"
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    placeholder="e.g. Oat milk, extra hot, no cinnamon..."
-                    className="w-full px-3 py-2 bg-[#071E13] text-xs text-white rounded-xl border border-[#16422E] focus:outline-hidden focus:border-[#F4B838] placeholder-[#6E887B]"
-                  />
-                </div>
-              )}
-            </div>
-
-            {/* Bottom Totals & Place Order */}
-            {items.length > 0 && (
-              <div className="p-5 bg-[#071E13] border-t border-[#16422E] space-y-3">
-                <div className="space-y-1.5 text-xs text-[#CAD4CD]">
-                  <div className="flex justify-between">
-                    <span>Subtotal:</span>
-                    <span className="font-mono text-white">{cafeInfo.currencySymbol}{subtotal.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Est. Tax (8%):</span>
-                    <span className="font-mono text-white">{cafeInfo.currencySymbol}{estimatedTax.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between text-base font-bold text-white pt-2 border-t border-[#16422E]">
-                    <span>Total:</span>
-                    <span className="font-mono text-[#F4B838]">{cafeInfo.currencySymbol}{total.toFixed(2)}</span>
-                  </div>
-                </div>
 
                 <div className="flex gap-2 pt-1">
                   <button

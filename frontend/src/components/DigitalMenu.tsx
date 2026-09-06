@@ -124,13 +124,37 @@ export const DigitalMenu: React.FC<DigitalMenuProps> = ({
 
         {/* Categories Horizontal Pills */}
         <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar pt-1">
+          {/* Dedicated Fasting Toggle Pill */}
+          <button
+            type="button"
+            onClick={() => {
+              if (selectedDietary === 'vegan') {
+                setSelectedDietary('all');
+              } else {
+                setSelectedDietary('vegan');
+                setSelectedCategory('all');
+              }
+            }}
+            className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-all select-none border ${
+              selectedDietary === 'vegan'
+                ? 'bg-[#B0C32E] text-[#071E13] border-[#B0C32E] shadow-lg font-black ring-2 ring-[#B0C32E]/40'
+                : 'bg-[#0B281B] text-[#B0C32E] border-[#B0C32E]/40 hover:bg-[#123827]'
+            }`}
+          >
+            <span className="w-2 h-2 rounded-full bg-[#B0C32E] animate-pulse" />
+            <span>የጾም (Fasting Menu)</span>
+          </button>
+
           {categories.map((cat) => {
-            const isSelected = selectedCategory === cat.id;
+            const isSelected = selectedCategory === cat.id && selectedDietary !== 'vegan';
             return (
               <button
                 key={cat.id}
                 type="button"
-                onClick={() => setSelectedCategory(cat.id)}
+                onClick={() => {
+                  setSelectedCategory(cat.id);
+                  if (selectedDietary === 'vegan') setSelectedDietary('all');
+                }}
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-all select-none ${
                   isSelected
                     ? 'bg-[#F4B838] text-black shadow-lg scale-[1.02]'
